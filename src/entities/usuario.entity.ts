@@ -16,19 +16,19 @@ export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'varchar', length: 10, unique: true })
   documento: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 30 })
   apellidos: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 30 })
   nombres: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 50 })
   email: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 100 })
   clave: string;
 
   @Column({
