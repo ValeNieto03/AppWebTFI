@@ -9,10 +9,20 @@ async function bootstrap() {
     .setTitle('Sistema de Clínica')
     .setDescription('API del sistema de gestión de turnos de la clínica')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      tagsSorter: (a: string, b: string) => {
+        const orden = ['Auth', 'Usuarios', 'Medicos', 'Pacientes', 'Reservas'];
+
+        return orden.indexOf(a) - orden.indexOf(b);
+      },
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
