@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
+import { ActualizarEstadoReservaDto } from './dto/actualizar-estado-reserva.dto.js';
 import {
   EstadoReserva,
   Reserva,
@@ -43,5 +45,30 @@ export class ReservasService {
         fechaHora: 'ASC',
       },
     });
+  }
+
+  async actualizarEstado(
+    id: number,
+    actualizarEstadoDto: ActualizarEstadoReservaDto,
+  ): Promise<Reserva> {
+    const estadosPermitidos = [
+      EstadoReserva.ATENDIDO,
+      EstadoReserva.AUSENTE,
+    ];
+
+    if (!estadosPermitidos.includes(actualizarEstadoDto.estado)) {
+      throw new BadRequestException(
+        'El estado debe ser ATENDIDO o AUSENTE',
+      );
+    }
+
+    const reserva = await this.reservasRepository.findOneBy({ id });
+
+    if (!reserva) {
+      throw new NotFoundException('La reserva no existe');
+    }
+
+    reserva.estado = actualizarEstadoDto.estado;
+    return this.reservasRepository.save(reserva);
   }
 }
