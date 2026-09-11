@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CrearMedicoDto {
-  @ApiProperty()
-  id_usuario: number;
+  @ApiPropertyOptional()
+  id_usuario?: number;
 
   @ApiProperty()
   matricula: number;

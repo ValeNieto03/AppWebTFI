@@ -26,4 +26,22 @@ export class PacientesService {
             },
         });
     }
+
+    async obtenerPorId(id: number) {
+        return this.usuarioRepository.findOne({
+            select: {
+                id: true,
+                documento: true,
+                apellidos: true,
+                nombres: true,
+                email: true,
+                estado: true,
+                rol: true,
+            },
+            where: {
+                id,
+                rol: RolUsuario.PACIENTE,
+            },
+        });
+    }
 }

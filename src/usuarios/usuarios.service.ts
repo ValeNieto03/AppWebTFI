@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Usuario } from '../entities/usuario.entity.js';
+import { Usuario, RolUsuario } from '../entities/usuario.entity.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import * as bcrypt from 'bcrypt';
@@ -14,11 +14,41 @@ export class UsuariosService {
     ) { }
 
     async obtenerTodos() {
-        return this.usuarioRepository.find();
+        return this.usuarioRepository.find({
+            select: {
+                id: true,
+                documento: true,
+                apellidos: true,
+                nombres: true,
+                email: true,
+                estado: true,
+                rol: true,
+            },
+        });
     }
 
-    async obtenerPorId(id: number) {
-        return this.usuarioRepository.findOneBy({ id });
+    async obtenerPorId(id: number, usuario: any) {
+        if (
+            usuario.rol !== RolUsuario.ADMINISTRADOR &&
+            usuario.id !== id
+        ) {
+            throw new ForbiddenException(
+                'No tiene permisos para consultar este usuario.',
+            );
+        }
+
+        return this.usuarioRepository.findOne({
+            select: {
+                id: true,
+                documento: true,
+                apellidos: true,
+                nombres: true,
+                email: true,
+                estado: true,
+                rol: true,
+            },
+            where: { id },
+        });
     }
 
     async buscarPorEmail(email: string) {
@@ -69,6 +99,16 @@ export class UsuariosService {
             clave: claveHasheada,
         });
 
-        return this.usuarioRepository.save(usuario);
+        const usuarioGuardado = await this.usuarioRepository.save(usuario);
+
+        return {
+            id: usuarioGuardado.id,
+            documento: usuarioGuardado.documento,
+            apellidos: usuarioGuardado.apellidos,
+            nombres: usuarioGuardado.nombres,
+            email: usuarioGuardado.email,
+            estado: usuarioGuardado.estado,
+            rol: usuarioGuardado.rol,
+        };
     }
 }

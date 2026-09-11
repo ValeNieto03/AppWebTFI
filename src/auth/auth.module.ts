@@ -9,7 +9,9 @@ import { PassportModule } from '@nestjs/passport';
 @Module({
   imports: [
     UsuariosModule,
-    PassportModule,
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'clave_secreta_clinica_2026',
       signOptions: {
@@ -21,4 +23,4 @@ import { PassportModule } from '@nestjs/passport';
   controllers: [AuthController],
   exports: [PassportModule],
 })
-export class AuthModule { }
+export class AuthModule {}

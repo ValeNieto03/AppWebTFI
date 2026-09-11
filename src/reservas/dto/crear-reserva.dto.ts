@@ -1,6 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CrearReservaDto {
+  @ApiPropertyOptional({
+    example: 3,
+    description: 'ID del paciente. Lo utiliza el administrador al crear una reserva.',
+  })
+  id_paciente?: number;
+
   @ApiProperty({
     example: 1,
     description: 'ID del médico',

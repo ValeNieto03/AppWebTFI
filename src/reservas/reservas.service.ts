@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reserva, EstadoReserva } from '../entities/reserva.entity.js';
@@ -218,30 +218,28 @@ export class ReservasService {
     });
 
     if (!reserva) {
-      return {
-        mensaje: 'La reserva no existe',
-      };
+      throw new BadRequestException('La reserva no existe');
     }
 
     if (reserva.id_medico !== medico.id) {
-      return {
-        mensaje: 'No tiene permiso para modificar esta reserva',
-      };
+      throw new ForbiddenException(
+        'No tiene permiso para modificar esta reserva',
+      );
     }
 
     if (reserva.estado !== EstadoReserva.ACTIVO) {
-      return {
-        mensaje: 'Solo se puede cambiar el estado de una reserva activa',
-      };
+      throw new BadRequestException(
+        'Solo se puede cambiar el estado de una reserva activa',
+      );
     }
 
     if (
       nuevoEstado !== EstadoReserva.ATENDIDO &&
       nuevoEstado !== EstadoReserva.AUSENTE
     ) {
-      return {
-        mensaje: 'El estado debe ser Atendido o Ausente',
-      };
+      throw new BadRequestException(
+        'El estado debe ser Atendido o Ausente',
+      );
     }
 
     reserva.estado = nuevoEstado;
@@ -249,29 +247,110 @@ export class ReservasService {
     return this.reservaRepository.save(reserva);
   }
 
-  async crear(crearReservaDto: CrearReservaDto, idPaciente: number) {
-    const paciente = await this.usuarioRepository.findOneBy({ id: idPaciente });
+  async crear(crearReservaDto: CrearReservaDto, usuarioLogueado: any) {
+    let idPaciente: number;
 
-    if (!paciente || paciente.rol !== 'Paciente') {
-      return { mensaje: 'El usuario no es un paciente' };
+    if (usuarioLogueado.rol === 'Paciente') {
+      idPaciente = usuarioLogueado.id;
+    } else if (usuarioLogueado.rol === 'Administrador') {
+      if (!crearReservaDto.id_paciente) {
+        throw new BadRequestException(
+          'El administrador debe indicar el paciente',
+        );
+      }
+
+      idPaciente = crearReservaDto.id_paciente;
+    } else {
+      throw new ForbiddenException(
+        'No tiene permisos para crear una reserva',
+      );
     }
 
-    const [fecha, hora] = crearReservaDto.fecha_hora.split(' ');
-    const [dia, mes, anio] = fecha.split('/');
+    const paciente = await this.usuarioRepository.findOneBy({
+      id: idPaciente,
+    });
+
+    if (!paciente || paciente.rol !== 'Paciente') {
+      throw new BadRequestException('El usuario no es un paciente');
+    }
+
+    const partes = crearReservaDto.fecha_hora.split(' ');
+
+    if (partes.length !== 2) {
+      throw new BadRequestException(
+        'La fecha debe tener el formato DD/MM/AAAA HH:mm',
+      );
+    }
+
+    const [fecha, hora] = partes;
+    const [dia, mes, anio] = fecha.split('/').map(Number);
+    const [horas, minutos] = hora.split(':').map(Number);
+
+    if (
+      !dia ||
+      !mes ||
+      !anio ||
+      Number.isNaN(horas) ||
+      Number.isNaN(minutos)
+    ) {
+      throw new BadRequestException(
+        'La fecha debe tener el formato DD/MM/AAAA HH:mm',
+      );
+    }
+
+    if (minutos !== 0) {
+      throw new BadRequestException(
+        'Los turnos deben comenzar en una hora exacta, por ejemplo 08:00, 09:00 o 10:00',
+      );
+    }
+
+    if (horas < 8 || horas > 15) {
+      throw new BadRequestException(
+        'El horario de atención es de 08:00 a 16:00',
+      );
+    }
 
     const fechaHora = new Date(
-      Number(anio),
-      Number(mes) - 1,
-      Number(dia),
-      ...hora.split(':').map(Number),
+      anio,
+      mes - 1,
+      dia,
+      horas,
+      minutos,
     );
+
+    if (
+      fechaHora.getFullYear() !== anio ||
+      fechaHora.getMonth() !== mes - 1 ||
+      fechaHora.getDate() !== dia ||
+      fechaHora.getHours() !== horas ||
+      fechaHora.getMinutes() !== minutos
+    ) {
+      throw new BadRequestException('La fecha indicada no es válida');
+    }
+
+    const ahora = new Date();
+
+    if (fechaHora <= ahora) {
+      throw new BadRequestException(
+        'No se puede reservar un turno en una fecha pasada',
+      );
+    }
+
+    const fechaMaxima = new Date(ahora);
+    fechaMaxima.setDate(fechaMaxima.getDate() + 30);
+
+    if (fechaHora > fechaMaxima) {
+      throw new BadRequestException(
+        'No se puede reservar con más de 30 días de anticipación',
+      );
+    }
 
     const medico = await this.medicoRepository.findOneBy({
       id: crearReservaDto.id_medico,
     });
 
     if (!medico) {
-      return { mensaje: 'El médico no existe' };
+      throw new BadRequestException('El médico no existe');
     }
 
     const reservaExistente = await this.reservaRepository.findOne({
@@ -283,9 +362,9 @@ export class ReservasService {
     });
 
     if (reservaExistente) {
-      return {
-        mensaje: 'El médico ya tiene una reserva para ese horario',
-      };
+      throw new BadRequestException(
+        'El médico ya tiene una reserva para ese horario',
+      );
     }
 
     const reserva = this.reservaRepository.create({
@@ -296,7 +375,8 @@ export class ReservasService {
       valor_consulta: medico.valor_consulta,
     });
 
-    const reservaGuardada = await this.reservaRepository.save(reserva);
+    const reservaGuardada =
+      await this.reservaRepository.save(reserva);
 
     const usuarioMedico = await this.usuarioRepository.findOneBy({
       id: medico.id_usuario,
@@ -323,19 +403,19 @@ export class ReservasService {
     });
 
     if (!reserva) {
-      return { mensaje: 'La reserva no existe' };
+      throw new BadRequestException('La reserva no existe');
     }
 
     if (reserva.id_paciente !== idPaciente) {
-      return {
-        mensaje: 'No tiene permiso para cancelar esta reserva',
-      };
+      throw new ForbiddenException(
+        'No tiene permiso para cancelar esta reserva',
+      );
     }
 
     if (reserva.estado !== EstadoReserva.ACTIVO) {
-      return {
-        mensaje: 'Solo se puede cancelar una reserva activa',
-      };
+      throw new BadRequestException(
+        'Solo se puede cancelar una reserva activa',
+      );
     }
 
     const ahora = new Date();
@@ -346,10 +426,9 @@ export class ReservasService {
       (1000 * 60 * 60 * 24);
 
     if (diferenciaDias < 1) {
-      return {
-        mensaje:
-          'La reserva solo se puede cancelar hasta el día anterior a la consulta',
-      };
+      throw new BadRequestException(
+        'La reserva solo se puede cancelar hasta el día anterior a la consulta',
+      );
     }
 
     reserva.estado = EstadoReserva.CANCELADO;
@@ -374,22 +453,22 @@ export class ReservasService {
     });
 
     if (!reserva) {
-      return { mensaje: 'La reserva no existe' };
+      throw new BadRequestException('La reserva no existe');
     }
 
     if (reserva.estado !== EstadoReserva.ACTIVO) {
-      return {
-        mensaje: 'Solo se puede cancelar una reserva activa',
-      };
+      throw new BadRequestException(
+        'Solo se puede cancelar una reserva activa',
+      );
     }
 
     const ahora = new Date();
     const fechaReserva = new Date(reserva.fecha_hora);
 
     if (ahora >= fechaReserva) {
-      return {
-        mensaje: 'La reserva ya comenzó y no puede ser cancelada',
-      };
+      throw new BadRequestException(
+        'La reserva ya comenzó y no puede ser cancelada',
+      );
     }
 
     reserva.estado = EstadoReserva.CANCELADO;

@@ -62,14 +62,14 @@ export class ReservasController {
   @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.PACIENTE)
+  @Roles(RolUsuario.PACIENTE, RolUsuario.ADMINISTRADOR)
   crearReserva(
     @Body() crearReservaDto: CrearReservaDto,
     @Req() request: any,
   ) {
     return this.reservasService.crear(
       crearReservaDto,
-      request.user.id,
+      request.user,
     );
   }
 
