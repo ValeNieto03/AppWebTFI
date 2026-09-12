@@ -1,5 +1,18 @@
-import { Body, Controller, Get, Post, Req, Query, Patch, Param } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Query,
+  Patch,
+  Param,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { ReservasService } from './reservas.service.js';
 import { CrearReservaDto } from './dto/crear-reserva.dto.js';
 import { UseGuards } from '@nestjs/common';
@@ -8,12 +21,18 @@ import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { RolUsuario } from '../entities/usuario.entity.js';
 import { CambiarEstadoReservaDto } from './dto/cambiar-estado-reserva.dto.js';
+import {
+  ListadoReservasRespuestaDto,
+  OperacionReservaRespuestaDto,
+  ReservaRespuestaDto,
+} from './dto/reserva-respuesta.dto.js';
 
 @Controller('reservas')
 export class ReservasController {
-  constructor(private readonly reservasService: ReservasService) { }
+  constructor(private readonly reservasService: ReservasService) {}
 
   @Get()
+  @ApiOkResponse({ type: ListadoReservasRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.PACIENTE)
@@ -22,6 +41,7 @@ export class ReservasController {
   }
 
   @Get('admin')
+  @ApiOkResponse({ type: [ReservaRespuestaDto] })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMINISTRADOR)
@@ -30,20 +50,16 @@ export class ReservasController {
   }
 
   @Get('medico')
+  @ApiOkResponse({ type: ListadoReservasRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.MEDICO)
-  obtenerReservasMedico(
-    @Req() request: any,
-    @Query('fecha') fecha: string,
-  ) {
-    return this.reservasService.obtenerPorMedico(
-      request.user.id,
-      fecha,
-    );
+  obtenerReservasMedico(@Req() request: any, @Query('fecha') fecha: string) {
+    return this.reservasService.obtenerPorMedico(request.user.id, fecha);
   }
 
   @Patch(':id/estado')
+  @ApiOkResponse({ type: ReservaRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.MEDICO)
@@ -60,34 +76,25 @@ export class ReservasController {
   }
 
   @Post()
+  @ApiCreatedResponse({ type: OperacionReservaRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.PACIENTE, RolUsuario.ADMINISTRADOR)
-  crearReserva(
-    @Body() crearReservaDto: CrearReservaDto,
-    @Req() request: any,
-  ) {
-    return this.reservasService.crear(
-      crearReservaDto,
-      request.user,
-    );
+  crearReserva(@Body() crearReservaDto: CrearReservaDto, @Req() request: any) {
+    return this.reservasService.crear(crearReservaDto, request.user);
   }
 
   @Patch(':id/cancelar')
+  @ApiOkResponse({ type: OperacionReservaRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.PACIENTE)
-  cancelarReserva(
-    @Param('id') id: string,
-    @Req() request: any,
-  ) {
-    return this.reservasService.cancelar(
-      Number(id),
-      request.user.id,
-    );
+  cancelarReserva(@Param('id') id: string, @Req() request: any) {
+    return this.reservasService.cancelar(Number(id), request.user.id);
   }
 
   @Patch('admin/:id/cancelar')
+  @ApiOkResponse({ type: OperacionReservaRespuestaDto })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.ADMINISTRADOR)
