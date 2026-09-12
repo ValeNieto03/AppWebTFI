@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { EstadoUsuario } from '../entities/usuario.entity.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { LoginDto } from '../usuarios/dto/login.dto.js';
 import * as bcrypt from 'bcrypt';
@@ -20,10 +21,7 @@ export class AuthService {
       };
     }
 
-    const claveCorrecta = await bcrypt.compare(
-      loginDto.clave,
-      usuario.clave,
-    );
+    const claveCorrecta = await bcrypt.compare(loginDto.clave, usuario.clave);
 
     if (!claveCorrecta) {
       return {
@@ -31,7 +29,7 @@ export class AuthService {
       };
     }
 
-    if (usuario.estado !== 'activo') {
+    if (usuario.estado !== EstadoUsuario.ACTIVO) {
       return {
         mensaje: 'El usuario no está activo',
       };

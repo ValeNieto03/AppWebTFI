@@ -1,10 +1,14 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reserva, EstadoReserva } from '../entities/reserva.entity.js';
 import { Medico } from '../entities/medico.entity.js';
 import { CrearReservaDto } from './dto/crear-reserva.dto.js';
-import { Usuario } from '../entities/usuario.entity.js';
+import { RolUsuario, Usuario } from '../entities/usuario.entity.js';
 
 @Injectable()
 export class ReservasService {
@@ -17,7 +21,7 @@ export class ReservasService {
 
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-  ) { }
+  ) {}
 
   async obtenerTodas() {
     const reservas = await this.reservaRepository.find();
@@ -59,11 +63,11 @@ export class ReservasService {
 
           paciente: paciente
             ? {
-              id: paciente.id,
-              nombre: `${paciente.nombres} ${paciente.apellidos}`,
-              documento: paciente.documento,
-              email: paciente.email,
-            }
+                id: paciente.id,
+                nombre: `${paciente.nombres} ${paciente.apellidos}`,
+                documento: paciente.documento,
+                email: paciente.email,
+              }
             : null,
 
           medico: datosMedico,
@@ -123,11 +127,11 @@ export class ReservasService {
 
           paciente: paciente
             ? {
-              id: paciente.id,
-              nombre: `${paciente.nombres} ${paciente.apellidos}`,
-              documento: paciente.documento,
-              email: paciente.email,
-            }
+                id: paciente.id,
+                nombre: `${paciente.nombres} ${paciente.apellidos}`,
+                documento: paciente.documento,
+                email: paciente.email,
+              }
             : null,
 
           medico: datosMedico,
@@ -183,11 +187,11 @@ export class ReservasService {
 
           paciente: paciente
             ? {
-              id: paciente.id,
-              nombre: `${paciente.nombres} ${paciente.apellidos}`,
-              documento: paciente.documento,
-              email: paciente.email,
-            }
+                id: paciente.id,
+                nombre: `${paciente.nombres} ${paciente.apellidos}`,
+                documento: paciente.documento,
+                email: paciente.email,
+              }
             : null,
         };
       }),
@@ -237,9 +241,7 @@ export class ReservasService {
       nuevoEstado !== EstadoReserva.ATENDIDO &&
       nuevoEstado !== EstadoReserva.AUSENTE
     ) {
-      throw new BadRequestException(
-        'El estado debe ser Atendido o Ausente',
-      );
+      throw new BadRequestException('El estado debe ser Atendido o Ausente');
     }
 
     reserva.estado = nuevoEstado;
@@ -250,9 +252,9 @@ export class ReservasService {
   async crear(crearReservaDto: CrearReservaDto, usuarioLogueado: any) {
     let idPaciente: number;
 
-    if (usuarioLogueado.rol === 'Paciente') {
+    if (usuarioLogueado.rol === RolUsuario.PACIENTE) {
       idPaciente = usuarioLogueado.id;
-    } else if (usuarioLogueado.rol === 'Administrador') {
+    } else if (usuarioLogueado.rol === RolUsuario.ADMINISTRADOR) {
       if (!crearReservaDto.id_paciente) {
         throw new BadRequestException(
           'El administrador debe indicar el paciente',
@@ -261,16 +263,14 @@ export class ReservasService {
 
       idPaciente = crearReservaDto.id_paciente;
     } else {
-      throw new ForbiddenException(
-        'No tiene permisos para crear una reserva',
-      );
+      throw new ForbiddenException('No tiene permisos para crear una reserva');
     }
 
     const paciente = await this.usuarioRepository.findOneBy({
       id: idPaciente,
     });
 
-    if (!paciente || paciente.rol !== 'Paciente') {
+    if (!paciente || paciente.rol !== RolUsuario.PACIENTE) {
       throw new BadRequestException('El usuario no es un paciente');
     }
 
@@ -286,13 +286,7 @@ export class ReservasService {
     const [dia, mes, anio] = fecha.split('/').map(Number);
     const [horas, minutos] = hora.split(':').map(Number);
 
-    if (
-      !dia ||
-      !mes ||
-      !anio ||
-      Number.isNaN(horas) ||
-      Number.isNaN(minutos)
-    ) {
+    if (!dia || !mes || !anio || Number.isNaN(horas) || Number.isNaN(minutos)) {
       throw new BadRequestException(
         'La fecha debe tener el formato DD/MM/AAAA HH:mm',
       );
@@ -310,13 +304,7 @@ export class ReservasService {
       );
     }
 
-    const fechaHora = new Date(
-      anio,
-      mes - 1,
-      dia,
-      horas,
-      minutos,
-    );
+    const fechaHora = new Date(anio, mes - 1, dia, horas, minutos);
 
     if (
       fechaHora.getFullYear() !== anio ||
@@ -375,8 +363,7 @@ export class ReservasService {
       valor_consulta: medico.valor_consulta,
     });
 
-    const reservaGuardada =
-      await this.reservaRepository.save(reserva);
+    const reservaGuardada = await this.reservaRepository.save(reserva);
 
     const usuarioMedico = await this.usuarioRepository.findOneBy({
       id: medico.id_usuario,
@@ -422,8 +409,7 @@ export class ReservasService {
     const fechaReserva = new Date(reserva.fecha_hora);
 
     const diferenciaDias =
-      (fechaReserva.getTime() - ahora.getTime()) /
-      (1000 * 60 * 60 * 24);
+      (fechaReserva.getTime() - ahora.getTime()) / (1000 * 60 * 60 * 24);
 
     if (diferenciaDias < 1) {
       throw new BadRequestException(
@@ -445,7 +431,6 @@ export class ReservasService {
       },
     };
   }
-
 
   async cancelarAdmin(idReserva: number) {
     const reserva = await this.reservaRepository.findOneBy({

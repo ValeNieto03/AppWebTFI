@@ -1,22 +1,43 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Medico } from './medico.entity.js';
+import { Usuario } from './usuario.entity.js';
 
 export enum EstadoReserva {
-  ACTIVO = 'Activo',
-  ATENDIDO = 'Atendido',
-  AUSENTE = 'Ausente',
-  CANCELADO = 'Cancelado',
+  ACTIVO = 'ACTIVO',
+  ATENDIDO = 'ATENDIDO',
+  AUSENTE = 'AUSENTE',
+  CANCELADO = 'CANCELADO',
 }
 
 @Entity('reservas')
+@Index('UQ_reservas_medico_fecha_activa', ['id_medico', 'fecha_hora'], {
+  unique: true,
+  where: '"estado" = \'ACTIVO\'',
+})
 export class Reserva {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'id_medico', type: 'int' })
   id_medico: number;
 
-  @Column()
+  @ManyToOne(() => Medico, (medico) => medico.reservas, { nullable: false })
+  @JoinColumn({ name: 'id_medico' })
+  medico: Medico;
+
+  @Column({ name: 'id_paciente', type: 'int' })
   id_paciente: number;
+
+  @ManyToOne(() => Usuario, (usuario) => usuario.reservas, { nullable: false })
+  @JoinColumn({ name: 'id_paciente' })
+  paciente: Usuario;
 
   @Column({ type: 'timestamp' })
   fecha_hora: Date;
@@ -27,6 +48,6 @@ export class Reserva {
   })
   estado: EstadoReserva;
 
-  @Column()
+  @Column({ type: 'int' })
   valor_consulta: number;
 }
