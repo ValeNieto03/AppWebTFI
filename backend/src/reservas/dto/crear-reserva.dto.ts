@@ -16,8 +16,8 @@ export class CrearReservaDto {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'id_paciente debe ser un número entero' })
+  @IsPositive({ message: 'id_paciente debe ser un número positivo' })
   id_paciente?: number;
 
   @ApiProperty({
@@ -25,8 +25,8 @@ export class CrearReservaDto {
     description: 'ID del médico',
   })
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'id_medico debe ser un número entero' })
+  @IsPositive({ message: 'id_medico debe ser un número positivo' })
   id_medico: number;
 
   @ApiProperty({

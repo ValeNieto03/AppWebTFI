@@ -8,7 +8,7 @@ export class ModificarValorConsultaDto {
     description: 'Nuevo valor de la consulta',
   })
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'valor_consulta debe ser un número entero' })
+  @IsPositive({ message: 'valor_consulta debe ser un número positivo' })
   valor_consulta: number;
 }

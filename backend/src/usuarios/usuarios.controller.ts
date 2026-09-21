@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
-import { LoginDto } from './dto/login.dto.js';
 //import { UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -51,10 +50,5 @@ export class UsuariosController {
   @Roles(RolUsuario.ADMINISTRADOR)
   crearUsuario(@Body() crearUsuarioDto: CrearUsuarioDto) {
     return this.usuariosService.crear(crearUsuarioDto);
-  }
-
-  @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.usuariosService.login(loginDto);
   }
 }

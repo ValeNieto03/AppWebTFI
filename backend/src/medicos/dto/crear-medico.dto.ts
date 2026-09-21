@@ -6,19 +6,19 @@ export class CrearMedicoDto {
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'id_usuario debe ser un número entero' })
+  @IsPositive({ message: 'id_usuario debe ser un número positivo' })
   id_usuario?: number;
 
   @ApiProperty()
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'matricula debe ser un número entero' })
+  @IsPositive({ message: 'matricula debe ser un número positivo' })
   matricula: number;
 
   @ApiProperty()
   @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @IsInt({ message: 'valor_consulta debe ser un número entero' })
+  @IsPositive({ message: 'valor_consulta debe ser un número positivo' })
   valor_consulta: number;
 }
