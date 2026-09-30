@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario, RolUsuario } from '../entities/usuario.entity.js';
@@ -92,23 +96,77 @@ export class UsuariosService {
     }
 
     async crear(crearUsuarioDto: CrearUsuarioDto) {
-        const claveHasheada = await bcrypt.hash(crearUsuarioDto.clave, 10);
+        const usuarioPorDocumento =
+            await this.usuarioRepository.findOneBy({
+                documento: crearUsuarioDto.documento,
+            });
+
+        if (usuarioPorDocumento) {
+            throw new BadRequestException(
+                'El documento ya está registrado.',
+            );
+        }
+
+        const usuarioPorEmail =
+            await this.usuarioRepository.findOneBy({
+                email: crearUsuarioDto.email,
+            });
+
+        if (usuarioPorEmail) {
+            throw new BadRequestException(
+                'El email ya está registrado.',
+            );
+        }
+
+        const claveHasheada = await bcrypt.hash(
+            crearUsuarioDto.clave,
+            10,
+        );
 
         const usuario = this.usuarioRepository.create({
             ...crearUsuarioDto,
             clave: claveHasheada,
         });
 
-        const usuarioGuardado = await this.usuarioRepository.save(usuario);
+        try {
+            const usuarioGuardado =
+                await this.usuarioRepository.save(usuario);
 
-        return {
-            id: usuarioGuardado.id,
-            documento: usuarioGuardado.documento,
-            apellidos: usuarioGuardado.apellidos,
-            nombres: usuarioGuardado.nombres,
-            email: usuarioGuardado.email,
-            estado: usuarioGuardado.estado,
-            rol: usuarioGuardado.rol,
-        };
+            return {
+                id: usuarioGuardado.id,
+                documento: usuarioGuardado.documento,
+                apellidos: usuarioGuardado.apellidos,
+                nombres: usuarioGuardado.nombres,
+                email: usuarioGuardado.email,
+                estado: usuarioGuardado.estado,
+                rol: usuarioGuardado.rol,
+            };
+        } catch (error: any) {
+            if (error?.code === '23505') {
+                if (
+                    error?.constraint ===
+                    'usuarios_documento_key'
+                ) {
+                    throw new BadRequestException(
+                        'El documento ya está registrado.',
+                    );
+                }
+
+                if (
+                    error?.constraint ===
+                    'usuarios_email_key'
+                ) {
+                    throw new BadRequestException(
+                        'El email ya está registrado.',
+                    );
+                }
+
+                throw new BadRequestException(
+                    'Ya existe un usuario con alguno de los datos indicados.',
+                );
+            }
+
+            throw error;
+        }
     }
 }
