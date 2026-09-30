@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { LoginDto } from '../usuarios/dto/login.dto.js';
@@ -15,9 +18,9 @@ export class AuthService {
     const usuario = await this.usuariosService.buscarPorEmail(loginDto.email);
 
     if (!usuario) {
-      return {
-        mensaje: 'Usuario o contraseña incorrectos',
-      };
+      throw new UnauthorizedException(
+        'Usuario o contraseña incorrectos',
+      );
     }
 
     const claveCorrecta = await bcrypt.compare(
@@ -26,15 +29,15 @@ export class AuthService {
     );
 
     if (!claveCorrecta) {
-      return {
-        mensaje: 'Usuario o contraseña incorrectos',
-      };
+      throw new UnauthorizedException(
+        'Usuario o contraseña incorrectos',
+      );
     }
 
     if (usuario.estado !== 'activo') {
-      return {
-        mensaje: 'El usuario no está activo',
-      };
+      throw new UnauthorizedException(
+        'El usuario no está activo',
+      );
     }
 
     const payload = {

@@ -418,14 +418,13 @@ export class ReservasService {
       );
     }
 
-    const ahora = new Date();
-    const fechaReserva = new Date(reserva.fecha_hora);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
 
-    const diferenciaDias =
-      (fechaReserva.getTime() - ahora.getTime()) /
-      (1000 * 60 * 60 * 24);
+    const diaConsulta = new Date(reserva.fecha_hora);
+    diaConsulta.setHours(0, 0, 0, 0);
 
-    if (diferenciaDias < 1) {
+    if (hoy >= diaConsulta) {
       throw new BadRequestException(
         'La reserva solo se puede cancelar hasta el día anterior a la consulta',
       );
