@@ -1,0 +1,73 @@
+<div class="login-page">
+
+    <div class="login-card">
+        <div class="login-info">
+
+            <div class="logo">
+                <img src="/Logo-Cruz2.ico" alt="Logo de la Clínica Médica" />
+            </div>
+
+            <h1>Clínica Médica</h1>
+
+            <p class="subtitle">
+                Sistema de gestión de turnos
+            </p>
+
+            <div class="info-line"></div>
+
+            <p class="welcome-text">
+                Bienvenido/a al sistema.
+                Ingresá con tus credenciales para acceder
+                a las funcionalidades disponibles según tu rol.
+            </p>
+
+        </div>
+
+        <div class="login-form-container">
+
+            <h2>Iniciar sesión</h2>
+
+            <p class="form-description">
+                Ingresá tus datos para continuar
+            </p>
+
+            <form (ngSubmit)="iniciarSesion()">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Correo electrónico
+                    </label>
+
+                    <input id="email" type="email" name="email" [(ngModel)]="email" placeholder="ejemplo@clinica.com"
+                        required />
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="clave">
+                        Contraseña
+                    </label>
+
+                    <input id="clave" type="password" name="clave" [(ngModel)]="clave"
+                        placeholder="Ingresá tu contraseña" required />
+
+                </div>
+
+                <button type="submit" [disabled]="cargando">
+                    {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+                </button>
+
+            </form>
+
+            @if (mensaje) {
+            <p class="login-message">
+                {{ mensaje }}
+            </p>
+            }
+
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,93 @@
+<div class="patient-page">
+
+    <header class="patient-header">
+        <div class="header-content">
+
+            <div>
+                <p class="eyebrow">Portal del paciente</p>
+
+                <h1>Mis turnos</h1>
+
+                <p class="subtitle">
+                    Consultá y gestioná tus turnos médicos.
+                </p>
+            </div>
+
+            <button class="logout-button" type="button" (click)="cerrarSesion()">
+                Cerrar sesión
+            </button>
+
+        </div>
+    </header>
+
+    <main class="patient-content">
+
+        <section class="options-grid">
+
+            <article class="option-card">
+
+                <div class="option-icon">
+                    +
+                </div>
+
+                <div>
+                    <h3>Reservar turno</h3>
+
+                    <p>
+                        Elegí un médico, una fecha y un horario disponible.
+                    </p>
+                </div>
+
+            </article>
+
+            <article class="option-card">
+
+                <div class="option-icon">
+                    ✓
+                </div>
+
+                <div>
+                    <h3>Mis turnos</h3>
+
+                    <p>
+                        Consultá los turnos que tenés reservados.
+                    </p>
+                </div>
+
+            </article>
+
+            <article class="option-card">
+
+                <div class="option-icon">
+                    ×
+                </div>
+
+                <div>
+                    <h3>Cancelar turno</h3>
+
+                    <p>
+                        Cancelá un turno respetando el plazo permitido.
+                    </p>
+                </div>
+
+            </article>
+
+        </section>
+    </main>
+
+    <div class="success-toast">
+
+        <div class="toast-icon">
+            ✓
+        </div>
+
+        <div>
+            <strong>Sesión iniciada</strong>
+
+            <p>
+                Bienvenido/a al portal del paciente.
+            </p>
+        </div>
+    </div>
+
+</div>

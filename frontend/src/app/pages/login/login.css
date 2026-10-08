@@ -1,0 +1,303 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(135deg,
+            #eaf6fc 0%,
+            #f7fbfe 50%,
+            #e7f1ff 100%);
+}
+
+/* -------------------------
+Tarjeta principal
+------------------------- */
+
+.login-card {
+    width: 100%;
+    max-width: 900px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px rgba(13, 110, 253, 0.10);
+
+    overflow: hidden;
+}
+
+/* -------------------------
+Panel izquierdo
+------------------------- */
+
+.login-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 55px 45px;
+
+    background:
+        linear-gradient(145deg,
+            #0d6efd,
+            #168bc4);
+
+    color: #ffffff;
+}
+
+/* Logo */
+
+.logo {
+    width: 82px;
+    height: 82px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 25px;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.18);
+
+    overflow: hidden;
+}
+
+.logo img {
+    width: 58px;
+    height: 58px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+/* Información de la clínica */
+
+.login-info h1 {
+    margin: 0 0 10px;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.subtitle {
+    margin: 0;
+
+    font-size: 17px;
+    font-weight: 400;
+
+    color: rgba(255, 255, 255, 0.90);
+}
+
+.info-line {
+    width: 60px;
+    height: 3px;
+
+    margin: 25px 0;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+}
+
+.welcome-text {
+    max-width: 350px;
+
+    margin: 0;
+
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.7;
+
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* -------------------------
+Formulario
+------------------------- */
+
+.login-form-container {
+    padding: 55px 50px;
+
+    background: #ffffff;
+}
+
+.login-form-container h2 {
+    margin: 0 0 8px;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    color: #1f2937;
+}
+
+.form-description {
+    margin: 0 0 30px;
+
+    font-size: 14px;
+    font-weight: 400;
+
+    color: #6b7280;
+}
+
+/* Campos */
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #374151;
+}
+
+.form-group input {
+    width: 100%;
+
+    padding: 13px 14px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    outline: none;
+
+    background: #ffffff;
+
+    font-size: 15px;
+    font-weight: 400;
+
+    color: #1f2937;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.form-group input:focus {
+    border-color: #0d6efd;
+
+    box-shadow:
+        0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
+/* -------------------------
+Botón
+------------------------- */
+
+button {
+    width: 100%;
+
+    padding: 13px 20px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #0d6efd;
+
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 10px rgba(13, 110, 253, 0.20);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+button:hover {
+    background: #0b5ed7;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 14px rgba(13, 110, 253, 0.25);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* -------------------------
+Responsive
+------------------------- */
+
+@media (max-width: 700px) {
+
+    .login-page {
+        padding: 20px;
+    }
+
+    .login-card {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+    }
+
+    .login-info {
+        padding: 35px 30px;
+    }
+
+    .logo {
+        width: 70px;
+        height: 70px;
+    }
+
+    .logo img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .login-info h1 {
+        font-size: 27px;
+    }
+
+    .welcome-text {
+        max-width: none;
+    }
+
+    .login-form-container {
+        padding: 35px 30px;
+    }
+}
+
+@media (max-width: 400px) {
+
+    .login-page {
+        padding: 12px;
+    }
+
+    .login-info {
+        padding: 30px 24px;
+    }
+
+    .login-form-container {
+        padding: 30px 24px;
+    }
+}
