@@ -6,6 +6,10 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: 'http://localhost:4200',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -23,7 +27,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Sistema de Clínica')
-    .setDescription('API del sistema de gestión de turnos de la clínica')
+    .setDescription(
+      'API del sistema de gestión de turnos de la clínica',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -33,7 +39,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       tagsSorter: (a: string, b: string) => {
-        const orden = ['Auth', 'Usuarios', 'Medicos', 'Pacientes', 'Reservas'];
+        const orden = [
+          'Auth',
+          'Usuarios',
+          'Medicos',
+          'Pacientes',
+          'Reservas',
+        ];
 
         return orden.indexOf(a) - orden.indexOf(b);
       },
