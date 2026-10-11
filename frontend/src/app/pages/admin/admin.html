@@ -25,13 +25,20 @@
 
         <div class="options-grid">
 
-            <div class="option-card">
-                <h3>Turnos</h3>
+           <div
+    class="option-card"
+    role="button"
+    tabindex="0"
+    (click)="irATurnos()"
+    (keydown.enter)="irATurnos()"
+    (keydown.space)="$event.preventDefault(); irATurnos()"
+>
+    <h3>Turnos</h3>
 
-                <p>
-                    Reservar, consultar y cancelar turnos.
-                </p>
-            </div>
+    <p>
+        Reservar, consultar y cancelar turnos.
+    </p>
+</div>
 
             <div class="option-card">
                 <h3>Médicos</h3>

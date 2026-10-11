@@ -1,0 +1,279 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.turnos-page {
+  min-height: 100vh;
+  padding: 42px 24px;
+  background: linear-gradient(135deg, #e8f4fa 0%, #f5f9fc 55%, #e8f5f1 100%);
+  color: #20354b;
+}
+
+.turnos-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.turnos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.eyebrow {
+  color: #168b91;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.turnos-header h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  margin: 10px 0;
+  color: #173b56;
+}
+
+.turnos-header p,
+.tabla-header p {
+  color: #708093;
+  margin: 0;
+}
+
+.btn-volver,
+.btn-actualizar,
+.estado-mensaje button {
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-volver {
+  background: #fff;
+  color: #245574;
+  box-shadow: 0 4px 15px #173b5612;
+}
+
+.btn-actualizar,
+.estado-mensaje button {
+  background: linear-gradient(135deg, #137fa0, #16a398);
+  color: #fff;
+}
+
+.btn-volver:hover,
+.btn-actualizar:hover {
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.resumen-card {
+  background: #fff;
+  border: 1px solid #e4edf3;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 5px 22px #1b56700d;
+  border-left: 5px solid #159eaa;
+}
+
+.resumen-card:nth-child(2) {
+  border-left-color: #2eaa80;
+}
+
+.resumen-card:nth-child(3) {
+  border-left-color: #e0a047;
+}
+
+.resumen-card span {
+  display: block;
+  color: #758699;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.resumen-card strong {
+  color: #173b56;
+  font-size: 32px;
+}
+
+.tabla-panel {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e3ebf1;
+  box-shadow: 0 8px 30px #17445a12;
+  overflow: hidden;
+}
+
+.tabla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 26px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.tabla-header h2 {
+  color: #173b56;
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 760px;
+}
+
+th {
+  background: #f1f7fa;
+  color: #507083;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 17px 20px;
+}
+
+td {
+  padding: 19px 20px;
+  border-bottom: 1px solid #edf1f5;
+  color: #405469;
+  font-size: 14px;
+}
+
+tbody tr:hover {
+  background: #f7fbfd;
+}
+
+.id-cell {
+  font-weight: 700;
+  color: #178b9c;
+}
+
+.precio-cell {
+  font-weight: 700;
+  color: #237b65;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #edf0f3;
+  color: #566577;
+}
+
+.estado-badge.activo {
+  background: #e2f6ea;
+  color: #228452;
+}
+
+.estado-badge.cancelado {
+  background: #fce8e8;
+  color: #c34d4d;
+}
+
+.estado-badge.atendido {
+  background: #e2efff;
+  color: #286fa7;
+}
+
+.estado-badge.ausente {
+  background: #fff2d9;
+  color: #a77318;
+}
+
+.estado-mensaje {
+  min-height: 220px;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #708093;
+}
+
+.estado-mensaje h3 {
+  color: #24445d;
+  margin-bottom: 4px;
+}
+
+.estado-mensaje.error {
+  color: #bd4242;
+}
+
+.empty-icon {
+  font-size: 40px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e2eff4;
+  border-top-color: #168e9d;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.turnos-footer {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 12px;
+  color: #8b9ca9;
+}
+
+@media (max-width: 700px) {
+  .turnos-page {
+    padding: 24px 14px;
+  }
+
+  .turnos-header,
+  .tabla-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resumen-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-volver,
+  .btn-actualizar {
+    width: 100%;
+  }
+}
