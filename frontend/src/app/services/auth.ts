@@ -71,4 +71,51 @@ export class AuthService {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
     }
+
+obtenerUsuario(): UsuarioSesion | null {
+    const usuarioGuardado = localStorage.getItem('usuario');
+
+    if (!usuarioGuardado) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(usuarioGuardado) as UsuarioSesion;
+    } catch {
+        return null;
+    }
+}
+
+sesionValida(): boolean {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        return false;
+    }
+
+    try {
+        const partes = token.split('.');
+
+        if (partes.length !== 3) {
+            return false;
+        }
+
+        const base64 = partes[1]
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        const payload = JSON.parse(atob(base64));
+
+        if (typeof payload.exp !== 'number') {
+            return false;
+        }
+
+        const fechaActual = Math.floor(Date.now() / 1000);
+
+        return payload.exp > fechaActual;
+    } catch {
+        return false;
+    }
+}
+
 }

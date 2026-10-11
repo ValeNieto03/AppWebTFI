@@ -1,0 +1,129 @@
+<div class="turnos-page">
+  <div class="turnos-container">
+
+    <header class="turnos-header">
+      <div>
+        <span class="eyebrow">PANEL DE ADMINISTRACIÓN</span>
+        <h1>Gestión de turnos</h1>
+        <p>Consultá y supervisá las reservas de la clínica.</p>
+      </div>
+
+      <button class="btn-volver" type="button" (click)="volver()">
+        ← Volver al panel
+      </button>
+    </header>
+
+    <section class="resumen-grid">
+      <div class="resumen-card">
+        <span>Total de reservas</span>
+        <strong>{{ reservas.length }}</strong>
+      </div>
+
+      <div class="resumen-card">
+        <span>Turnos activos</span>
+        <strong>{{ cantidadActivos }}</strong>
+      </div>
+
+      <div class="resumen-card">
+        <span>Turnos cancelados</span>
+        <strong>{{ cantidadCancelados }}</strong>
+      </div>
+    </section>
+
+    <section class="tabla-panel">
+
+      <div class="tabla-header">
+        <div>
+          <h2>Listado de reservas</h2>
+          <p>Información actualizada desde el sistema.</p>
+        </div>
+
+        <button
+          class="btn-actualizar"
+          type="button"
+          (click)="cargarReservas()"
+          [disabled]="cargando"
+        >
+          {{ cargando ? 'Actualizando...' : '↻ Actualizar reservas' }}
+        </button>
+      </div>
+
+      <div class="estado-mensaje" *ngIf="cargando">
+        <span class="spinner"></span>
+        <p>Cargando reservas...</p>
+      </div>
+
+      <div class="estado-mensaje error" *ngIf="error">
+        <p>{{ error }}</p>
+        <button type="button" (click)="cargarReservas()">
+          Reintentar
+        </button>
+      </div>
+
+      <div
+        class="estado-mensaje"
+        *ngIf="!cargando && !error && reservas.length === 0"
+      >
+        <span class="empty-icon">📅</span>
+        <h3>Todavía no hay reservas</h3>
+        <p>Los turnos registrados aparecerán en esta sección.</p>
+      </div>
+
+      <div
+        class="tabla-scroll"
+        *ngIf="!cargando && !error && reservas.length > 0"
+      >
+        <table>
+          <thead>
+            <tr>
+              <th>N.º</th>
+              <th>Fecha y hora</th>
+              <th>Paciente</th>
+              <th>Médico</th>
+              <th>Estado</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let reserva of reservas">
+              <td class="id-cell">#{{ reserva.id }}</td>
+
+              <td>
+                {{ reserva.fecha_hora | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+
+              <td>{{ reserva.paciente?.nombre || 'Sin datos' }}</td>
+
+              <td>{{ reserva.medico?.nombre || 'Sin datos' }}</td>
+
+              <td>
+                <span
+                  class="estado-badge"
+                  [ngClass]="{
+                    'activo': reserva.estado === 'ACTIVO',
+                    'cancelado': reserva.estado === 'CANCELADO',
+                    'atendido': reserva.estado === 'ATENDIDO',
+                    'ausente': reserva.estado === 'AUSENTE'
+                  }"
+                >
+                  {{ reserva.estado }}
+                </span>
+              </td>
+
+              <td class="precio-cell">
+                {{ reserva.valor_consulta | currency:'ARS':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <footer class="turnos-footer">
+      Sistema de gestión de clínica · Panel administrativo
+    </footer>
+
+  </div>
+</div>
