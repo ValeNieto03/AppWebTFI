@@ -21,8 +21,8 @@ export interface LoginRespuesta {
 })
 export class AuthService {
 
-    private readonly apiUrl =
-        'http://localhost:3000/api/v1/auth';
+    // Usamos una ruta relativa: Angular la deriva al backend mediante el proxy.
+    private readonly apiUrl = '/api/v1/auth';
 
     constructor(
         private readonly http: HttpClient,
