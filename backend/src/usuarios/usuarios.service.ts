@@ -1,14 +1,23 @@
+
 import {
     BadRequestException,
     ForbiddenException,
     Injectable,
+    NotFoundException,
 } from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Usuario, RolUsuario } from '../entities/usuario.entity.js';
-import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
-import { LoginDto } from './dto/login.dto.js';
 import * as bcrypt from 'bcrypt';
+
+import {
+    Usuario,
+    RolUsuario,
+} from '../entities/usuario.entity.js';
+
+import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
+import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
+import { LoginDto } from './dto/login.dto.js';
 
 @Injectable()
 export class UsuariosService {
@@ -144,8 +153,7 @@ export class UsuariosService {
         } catch (error: any) {
             if (error?.code === '23505') {
                 if (
-                    error?.constraint ===
-                    'usuarios_documento_key'
+                    error?.constraint === 'usuarios_documento_key'
                 ) {
                     throw new BadRequestException(
                         'El documento ya está registrado.',
@@ -153,8 +161,7 @@ export class UsuariosService {
                 }
 
                 if (
-                    error?.constraint ===
-                    'usuarios_email_key'
+                    error?.constraint === 'usuarios_email_key'
                 ) {
                     throw new BadRequestException(
                         'El email ya está registrado.',
@@ -163,6 +170,136 @@ export class UsuariosService {
 
                 throw new BadRequestException(
                     'Ya existe un usuario con alguno de los datos indicados.',
+                );
+            }
+
+            throw error;
+        }
+    }
+
+    async actualizar(
+        id: number,
+        datos: ActualizarUsuarioDto,
+    ) {
+        const usuario = await this.usuarioRepository.findOneBy({ id });
+
+        if (!usuario) {
+            throw new NotFoundException(
+                'No se encontró el usuario que querés modificar.',
+            );
+        }
+
+        if (
+            datos.documento !== undefined &&
+            datos.documento !== usuario.documento
+        ) {
+            const documentoExistente =
+                await this.usuarioRepository.findOneBy({
+                    documento: datos.documento,
+                });
+
+            if (
+                documentoExistente &&
+                documentoExistente.id !== id
+            ) {
+                throw new BadRequestException(
+                    'El documento ya está registrado por otro usuario.',
+                );
+            }
+        }
+
+        if (
+            datos.email !== undefined &&
+            datos.email !== usuario.email
+        ) {
+            const emailExistente =
+                await this.usuarioRepository.findOneBy({
+                    email: datos.email,
+                });
+
+            if (
+                emailExistente &&
+                emailExistente.id !== id
+            ) {
+                throw new BadRequestException(
+                    'El correo electrónico ya está registrado por otro usuario.',
+                );
+            }
+        }
+
+        if (
+            datos.documento !== undefined &&
+            !datos.documento.trim()
+        ) {
+            throw new BadRequestException(
+                'El documento no puede estar vacío.',
+            );
+        }
+
+        if (
+            datos.nombres !== undefined &&
+            !datos.nombres.trim()
+        ) {
+            throw new BadRequestException(
+                'Los nombres no pueden estar vacíos.',
+            );
+        }
+
+        if (
+            datos.apellidos !== undefined &&
+            !datos.apellidos.trim()
+        ) {
+            throw new BadRequestException(
+                'Los apellidos no pueden estar vacíos.',
+            );
+        }
+
+        if (
+            datos.email !== undefined &&
+            !datos.email.trim()
+        ) {
+            throw new BadRequestException(
+                'El correo electrónico no puede estar vacío.',
+            );
+        }
+
+        if (datos.documento !== undefined) {
+            usuario.documento = datos.documento.trim();
+        }
+
+        if (datos.nombres !== undefined) {
+            usuario.nombres = datos.nombres.trim();
+        }
+
+        if (datos.apellidos !== undefined) {
+            usuario.apellidos = datos.apellidos.trim();
+        }
+
+        if (datos.email !== undefined) {
+            usuario.email = datos.email.trim();
+        }
+
+        if (datos.estado !== undefined) {
+            usuario.estado = datos.estado;
+        }
+
+        try {
+            const usuarioActualizado =
+                await this.usuarioRepository.save(usuario);
+
+            return {
+                id: usuarioActualizado.id,
+                documento: usuarioActualizado.documento,
+                apellidos: usuarioActualizado.apellidos,
+                nombres: usuarioActualizado.nombres,
+                email: usuarioActualizado.email,
+                estado: usuarioActualizado.estado,
+                rol: usuarioActualizado.rol,
+            };
+        } catch (error: any) {
+            if (error?.code === '23505') {
+                throw new BadRequestException(
+                    'El documento o el correo electrónico ya está registrado.',
                 );
             }
 

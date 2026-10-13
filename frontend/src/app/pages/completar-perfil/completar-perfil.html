@@ -1,0 +1,40 @@
+<main class="perfil-container">
+    <section class="perfil-card">
+        <h1>Completar perfil profesional</h1>
+
+        <p class="descripcion">
+            Antes de ingresar al portal médico, necesitás
+            completar tus datos profesionales.
+        </p>
+
+        <form (ngSubmit)="guardarPerfil()" #formulario="ngForm">
+            <div class="campo">
+                <label for="matricula">
+                    Matrícula profesional
+                </label>
+
+                <input id="matricula" type="number" name="matricula" [(ngModel)]="matricula" min="1" required
+                    placeholder="Ej.: 123456" />
+            </div>
+
+            <div class="campo">
+                <label for="valorConsulta">
+                    Valor de la consulta ($)
+                </label>
+
+                <input id="valorConsulta" type="number" name="valorConsulta" [(ngModel)]="valorConsulta" min="1"
+                    step="0.01" required placeholder="Ej.: 15000" />
+            </div>
+
+            @if (mensaje) {
+            <p class="mensaje-error" role="alert">
+                {{ mensaje }}
+            </p>
+            }
+
+            <button type="submit" [disabled]="cargando || formulario.invalid">
+                {{ cargando ? 'Guardando...' : 'Guardar y continuar' }}
+            </button>
+        </form>
+    </section>
+</main>

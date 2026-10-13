@@ -1,12 +1,15 @@
+
 import {
   Body,
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
+
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -15,6 +18,7 @@ import {
 
 import { UsuariosService } from './usuarios.service.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
+import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
 import { UsuarioRespuestaDto } from './dto/usuario-respuesta.dto.js';
 
 import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard.js';
@@ -24,7 +28,9 @@ import { RolUsuario } from '../entities/usuario.entity.js';
 
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly usuariosService: UsuariosService) {}
+  constructor(
+    private readonly usuariosService: UsuariosService,
+  ) { }
 
   @Get()
   @ApiBearerAuth()
@@ -65,7 +71,26 @@ export class UsuariosController {
   @ApiCreatedResponse({
     type: UsuarioRespuestaDto,
   })
-  crearUsuario(@Body() crearUsuarioDto: CrearUsuarioDto) {
+  crearUsuario(
+    @Body() crearUsuarioDto: CrearUsuarioDto,
+  ) {
     return this.usuariosService.crear(crearUsuarioDto);
+  }
+
+  @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMINISTRADOR)
+  @ApiOkResponse({
+    type: UsuarioRespuestaDto,
+  })
+  actualizarUsuario(
+    @Param('id') id: string,
+    @Body() actualizarUsuarioDto: ActualizarUsuarioDto,
+  ) {
+    return this.usuariosService.actualizar(
+      Number(id),
+      actualizarUsuarioDto,
+    );
   }
 }

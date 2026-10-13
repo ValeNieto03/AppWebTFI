@@ -1,10 +1,34 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Reserva, EstadoReserva } from '../entities/reserva.entity.js';
+
+import {
+  Reserva,
+  EstadoReserva,
+} from '../entities/reserva.entity.js';
+
 import { Medico } from '../entities/medico.entity.js';
-import { CrearReservaDto } from './dto/crear-reserva.dto.js';
 import { Usuario } from '../entities/usuario.entity.js';
+
+import {
+  SolicitudCorreccionReserva,
+  EstadoSolicitudCorreccion,
+} from '../entities/solicitud-correccion-reserva.entity.js';
+
+import { CrearReservaDto } from './dto/crear-reserva.dto.js';
+
+import {
+  SolicitarCorreccionReservaDto,
+} from './dto/solicitar-correccion-reserva.dto.js';
+
+import {
+  ResolverCorreccionReservaDto,
+} from './dto/resolver-correccion-reserva.dto.js';
 
 @Injectable()
 export class ReservasService {
@@ -17,7 +41,14 @@ export class ReservasService {
 
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+
+    @InjectRepository(SolicitudCorreccionReserva)
+    private readonly solicitudRepository: Repository<SolicitudCorreccionReserva>,
   ) { }
+
+  // =====================================================
+  // LISTAR TODAS LAS RESERVAS (ADMINISTRADOR)
+  // =====================================================
 
   async obtenerTodas() {
     const reservas = await this.reservaRepository.find();
@@ -71,6 +102,10 @@ export class ReservasService {
       }),
     );
   }
+
+  // =====================================================
+  // LISTAR RESERVAS DE UN PACIENTE
+  // =====================================================
 
   async obtenerPorPaciente(idPaciente: number) {
     const reservas = await this.reservaRepository.find({
@@ -140,7 +175,14 @@ export class ReservasService {
     };
   }
 
-  async obtenerPorMedico(idUsuarioMedico: number, fecha: string) {
+  // =====================================================
+  // LISTAR RESERVAS DE UN MÉDICO
+  // =====================================================
+
+  async obtenerPorMedico(
+    idUsuarioMedico: number,
+    fecha?: string,
+  ) {
     const medico = await this.medicoRepository.findOneBy({
       id_usuario: idUsuarioMedico,
     });
@@ -152,19 +194,28 @@ export class ReservasService {
       };
     }
 
-    const reservas = await this.reservaRepository
+    const consulta = this.reservaRepository
       .createQueryBuilder('reserva')
       .where('reserva.id_medico = :idMedico', {
         idMedico: medico.id,
-      })
-      .andWhere('DATE(reserva.fecha_hora) = :fecha', {
-        fecha,
-      })
-      .getMany();
+      });
+
+    if (fecha) {
+      consulta.andWhere(
+        'DATE(reserva.fecha_hora) = :fecha',
+        { fecha },
+      );
+    }
+
+    consulta.orderBy('reserva.fecha_hora', 'ASC');
+
+    const reservas = await consulta.getMany();
 
     if (reservas.length === 0) {
       return {
-        mensaje: 'El médico no tiene reservas para esa fecha',
+        mensaje: fecha
+          ? 'El médico no tiene reservas para esa fecha'
+          : 'El médico no tiene reservas',
         reservas: [],
       };
     }
@@ -198,6 +249,10 @@ export class ReservasService {
     };
   }
 
+  // =====================================================
+  // CAMBIAR ESTADO DE UNA RESERVA (MÉDICO)
+  // =====================================================
+
   async cambiarEstado(
     idReserva: number,
     idUsuarioMedico: number,
@@ -208,9 +263,7 @@ export class ReservasService {
     });
 
     if (!medico) {
-      return {
-        mensaje: 'El médico no existe',
-      };
+      throw new BadRequestException('El médico no existe');
     }
 
     const reserva = await this.reservaRepository.findOneBy({
@@ -247,7 +300,237 @@ export class ReservasService {
     return this.reservaRepository.save(reserva);
   }
 
-  async crear(crearReservaDto: CrearReservaDto, usuarioLogueado: any) {
+  // =====================================================
+  // SOLICITAR CORRECCIÓN DE UNA RESERVA (MÉDICO)
+  // =====================================================
+
+  async solicitarCorreccion(
+    idUsuarioMedico: number,
+    dto: SolicitarCorreccionReservaDto,
+  ) {
+    const medico = await this.medicoRepository.findOneBy({
+      id_usuario: idUsuarioMedico,
+    });
+
+    if (!medico) {
+      throw new BadRequestException('El médico no existe');
+    }
+
+    const reserva = await this.reservaRepository.findOneBy({
+      id: dto.id_reserva,
+    });
+
+    if (!reserva) {
+      throw new BadRequestException('La reserva no existe');
+    }
+
+    if (reserva.id_medico !== medico.id) {
+      throw new ForbiddenException(
+        'No tiene permiso para solicitar cambios en esta reserva',
+      );
+    }
+
+    if (
+      reserva.estado !== EstadoReserva.ATENDIDO &&
+      reserva.estado !== EstadoReserva.AUSENTE
+    ) {
+      throw new BadRequestException(
+        'Solo se pueden corregir reservas marcadas como Atendido o Ausente',
+      );
+    }
+
+    if (
+      dto.estado_solicitado !== EstadoReserva.ATENDIDO &&
+      dto.estado_solicitado !== EstadoReserva.AUSENTE
+    ) {
+      throw new BadRequestException(
+        'El estado solicitado debe ser Atendido o Ausente',
+      );
+    }
+
+    if (dto.estado_solicitado === reserva.estado) {
+      throw new BadRequestException(
+        'El estado solicitado debe ser diferente al estado actual',
+      );
+    }
+
+    if (!dto.motivo?.trim()) {
+      throw new BadRequestException(
+        'Debe indicar el motivo de la corrección',
+      );
+    }
+
+    const solicitudPendiente =
+      await this.solicitudRepository.findOneBy({
+        id_reserva: reserva.id,
+        estado_solicitud: EstadoSolicitudCorreccion.PENDIENTE,
+      });
+
+    if (solicitudPendiente) {
+      throw new BadRequestException(
+        'Esta reserva ya tiene una solicitud de corrección pendiente',
+      );
+    }
+
+    const solicitud = this.solicitudRepository.create({
+      id_reserva: reserva.id,
+      id_medico: medico.id,
+      estado_actual: reserva.estado,
+      estado_solicitado: dto.estado_solicitado,
+      motivo: dto.motivo.trim(),
+      estado_solicitud: EstadoSolicitudCorreccion.PENDIENTE,
+    });
+
+    const solicitudGuardada =
+      await this.solicitudRepository.save(solicitud);
+
+    return {
+      mensaje: 'Solicitud de corrección enviada al administrador',
+      solicitud: solicitudGuardada,
+    };
+  }
+
+  // =====================================================
+  // LISTAR SOLICITUDES DE CORRECCIÓN (ADMINISTRADOR)
+  // =====================================================
+
+  async obtenerSolicitudesCorreccion() {
+    const solicitudes = await this.solicitudRepository.find({
+      order: {
+        fecha_solicitud: 'DESC',
+      },
+    });
+
+    return Promise.all(
+      solicitudes.map(async (solicitud) => {
+        const reserva = await this.reservaRepository.findOneBy({
+          id: solicitud.id_reserva,
+        });
+
+        const medico = await this.medicoRepository.findOneBy({
+          id: solicitud.id_medico,
+        });
+
+        const usuarioMedico = medico
+          ? await this.usuarioRepository.findOneBy({
+            id: medico.id_usuario,
+          })
+          : null;
+
+        const paciente = reserva
+          ? await this.usuarioRepository.findOneBy({
+            id: reserva.id_paciente,
+          })
+          : null;
+
+        return {
+          ...solicitud,
+          medico: usuarioMedico
+            ? {
+              id: medico!.id,
+              nombre: `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`,
+              email: usuarioMedico.email,
+            }
+            : null,
+          paciente: paciente
+            ? {
+              id: paciente.id,
+              nombre: `${paciente.nombres} ${paciente.apellidos}`,
+              email: paciente.email,
+            }
+            : null,
+          fecha_reserva: reserva?.fecha_hora ?? null,
+          estado_reserva_actual: reserva?.estado ?? null,
+        };
+      }),
+    );
+  }
+
+  // =====================================================
+  // APROBAR O RECHAZAR UNA SOLICITUD (ADMINISTRADOR)
+  // =====================================================
+
+  async resolverSolicitudCorreccion(
+    idSolicitud: number,
+    idUsuarioAdministrador: number,
+    dto: ResolverCorreccionReservaDto,
+  ) {
+    const solicitud = await this.solicitudRepository.findOneBy({
+      id: idSolicitud,
+    });
+
+    if (!solicitud) {
+      throw new BadRequestException(
+        'La solicitud de corrección no existe',
+      );
+    }
+
+    if (
+      solicitud.estado_solicitud !==
+      EstadoSolicitudCorreccion.PENDIENTE
+    ) {
+      throw new BadRequestException(
+        'Esta solicitud ya fue resuelta',
+      );
+    }
+
+    if (
+      dto.estado !== EstadoSolicitudCorreccion.APROBADA &&
+      dto.estado !== EstadoSolicitudCorreccion.RECHAZADA
+    ) {
+      throw new BadRequestException(
+        'La resolución debe ser Aprobada o Rechazada',
+      );
+    }
+
+    if (dto.estado === EstadoSolicitudCorreccion.APROBADA) {
+      const reserva = await this.reservaRepository.findOneBy({
+        id: solicitud.id_reserva,
+      });
+
+      if (!reserva) {
+        throw new BadRequestException(
+          'La reserva asociada ya no existe',
+        );
+      }
+
+      if (reserva.estado !== solicitud.estado_actual) {
+        throw new BadRequestException(
+          'La reserva cambió de estado desde que se envió la solicitud. No se puede aprobar la corrección.',
+        );
+      }
+
+      reserva.estado = solicitud.estado_solicitado;
+
+      await this.reservaRepository.save(reserva);
+    }
+
+    solicitud.estado_solicitud = dto.estado;
+    solicitud.id_administrador = idUsuarioAdministrador;
+    solicitud.respuesta_admin =
+      dto.respuesta_admin?.trim() || null;
+    solicitud.fecha_resolucion = new Date();
+
+    const solicitudResuelta =
+      await this.solicitudRepository.save(solicitud);
+
+    return {
+      mensaje:
+        dto.estado === EstadoSolicitudCorreccion.APROBADA
+          ? 'Solicitud aprobada y reserva corregida'
+          : 'Solicitud rechazada',
+      solicitud: solicitudResuelta,
+    };
+  }
+
+  // =====================================================
+  // CREAR UNA RESERVA
+  // =====================================================
+
+  async crear(
+    crearReservaDto: CrearReservaDto,
+    usuarioLogueado: any,
+  ) {
     let idPaciente: number;
 
     if (usuarioLogueado.rol === 'Paciente') {
@@ -271,7 +554,9 @@ export class ReservasService {
     });
 
     if (!paciente || paciente.rol !== 'Paciente') {
-      throw new BadRequestException('El usuario no es un paciente');
+      throw new BadRequestException(
+        'El usuario no es un paciente',
+      );
     }
 
     const partes = crearReservaDto.fecha_hora.split(' ');
@@ -325,7 +610,9 @@ export class ReservasService {
       fechaHora.getHours() !== horas ||
       fechaHora.getMinutes() !== minutos
     ) {
-      throw new BadRequestException('La fecha indicada no es válida');
+      throw new BadRequestException(
+        'La fecha indicada no es válida',
+      );
     }
 
     const ahora = new Date();
@@ -397,7 +684,14 @@ export class ReservasService {
     };
   }
 
-  async cancelar(idReserva: number, idPaciente: number) {
+  // =====================================================
+  // CANCELAR RESERVA (PACIENTE)
+  // =====================================================
+
+  async cancelar(
+    idReserva: number,
+    idPaciente: number,
+  ) {
     const reserva = await this.reservaRepository.findOneBy({
       id: idReserva,
     });
@@ -432,7 +726,8 @@ export class ReservasService {
 
     reserva.estado = EstadoReserva.CANCELADO;
 
-    const reservaCancelada = await this.reservaRepository.save(reserva);
+    const reservaCancelada =
+      await this.reservaRepository.save(reserva);
 
     return {
       mensaje: 'Reserva cancelada correctamente',
@@ -445,6 +740,9 @@ export class ReservasService {
     };
   }
 
+  // =====================================================
+  // CANCELAR RESERVA (ADMINISTRADOR)
+  // =====================================================
 
   async cancelarAdmin(idReserva: number) {
     const reserva = await this.reservaRepository.findOneBy({
@@ -472,7 +770,8 @@ export class ReservasService {
 
     reserva.estado = EstadoReserva.CANCELADO;
 
-    const reservaCancelada = await this.reservaRepository.save(reserva);
+    const reservaCancelada =
+      await this.reservaRepository.save(reserva);
 
     return {
       mensaje: 'Reserva cancelada correctamente',

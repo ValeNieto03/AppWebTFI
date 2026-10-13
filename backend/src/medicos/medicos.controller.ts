@@ -7,6 +7,7 @@ import {
     Param,
     Req,
     UseGuards,
+    UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
@@ -29,7 +30,9 @@ import { RolUsuario } from '../entities/usuario.entity.js';
 
 @Controller('medicos')
 export class MedicosController {
-    constructor(private readonly medicosService: MedicosService) { }
+    constructor(
+        private readonly medicosService: MedicosService,
+    ) { }
 
     @Get()
     @ApiOkResponse({
@@ -37,6 +40,27 @@ export class MedicosController {
     })
     obtenerMedicos() {
         return this.medicosService.obtenerTodos();
+    }
+
+    @Get('mi-perfil')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.MEDICO)
+    @ApiOkResponse({
+        description: 'Perfil del médico autenticado',
+    })
+    obtenerMiPerfil(@Req() req: Request) {
+        const usuario = req.user as
+            | { id: number }
+            | undefined;
+
+        if (!usuario) {
+            throw new UnauthorizedException(
+                'Debe iniciar sesión para consultar su perfil.',
+            );
+        }
+
+        return this.medicosService.obtenerPorUsuario(usuario);
     }
 
     @Post()
@@ -50,7 +74,20 @@ export class MedicosController {
         @Body() crearMedicoDto: CrearMedicoDto,
         @Req() req: Request,
     ) {
-        return this.medicosService.crear(crearMedicoDto, req.user);
+        const usuario = req.user as
+            | { id: number; rol: RolUsuario }
+            | undefined;
+
+        if (!usuario) {
+            throw new UnauthorizedException(
+                'Debe iniciar sesión para registrarse como médico.',
+            );
+        }
+
+        return this.medicosService.crear(
+            crearMedicoDto,
+            usuario,
+        );
     }
 
     @Patch(':id/valor')

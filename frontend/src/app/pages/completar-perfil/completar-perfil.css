@@ -1,0 +1,79 @@
+.perfil-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #f3f6fb;
+    box-sizing: border-box;
+}
+
+.perfil-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 32px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+h1 {
+    margin: 0 0 12px;
+    color: #17365d;
+    font-size: 26px;
+    text-align: center;
+}
+
+.descripcion {
+    margin-bottom: 28px;
+    color: #5c6675;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+label {
+    color: #263445;
+    font-weight: 600;
+}
+
+input {
+    padding: 12px;
+    border: 1px solid #cbd3df;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: 2px solid #6b9fe8;
+    border-color: #3976c5;
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: #245da8;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mensaje-error {
+    margin-bottom: 16px;
+    color: #b42318;
+}

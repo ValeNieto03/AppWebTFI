@@ -1,71 +1,758 @@
-<div class="admin-page">
+<div class="admin-container">
+    <header class="admin-header">
+        <div class="header-text">
+            <span class="eyebrow">CLÍNICA MÉDICA</span>
+            <h1>Panel de administración</h1>
+            <p>Gestioná usuarios, profesionales y solicitudes de turnos.</p>
+        </div>
 
-    <div class="admin-header">
-        <div class="header-content">
+        <button type="button" class="btn btn-header" (click)="cerrarSesion()">
+            Cerrar sesión
+        </button>
+    </header>
 
+    <nav class="admin-nav">
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'resumen'"
+            (click)="cambiarSeccion('resumen')">
+            Resumen
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'usuarios'"
+            (click)="cambiarSeccion('usuarios')">
+            Usuarios
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'medicos'"
+            (click)="cambiarSeccion('medicos')">
+            Médicos
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'pacientes'"
+            (click)="cambiarSeccion('pacientes')">
+            Pacientes
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'solicitudes'"
+            (click)="cambiarSeccion('solicitudes')">
+            Solicitudes
+            <span class="nav-count" *ngIf="contarPendientes() > 0">
+                {{ contarPendientes() }}
+            </span>
+        </button>
+    </nav>
+
+    <!-- MENSAJE TEMPORAL DE USUARIOS -->
+    <div *ngIf="mensajeUsuarios()" class="success-toast" role="status" aria-live="polite">
+        <span>{{ mensajeUsuarios() }}</span>
+        <button type="button" class="toast-close" aria-label="Cerrar mensaje" (click)="mensajeUsuarios.set('')">
+            ✕
+        </button>
+    </div>
+
+    <!-- RESUMEN -->
+    <section *ngIf="seccionActiva() === 'resumen'" class="admin-section">
+        <div class="section-heading">
             <div>
-                <p class="eyebrow">Panel de administración</p>
-
-                <h1>Bienvenido/a</h1>
-
-                <p class="subtitle">
-                    Gestioná las funcionalidades disponibles del sistema de clínica.
-                </p>
+                <span class="eyebrow">VISTA GENERAL</span>
+                <h2>Resumen</h2>
+                <p>Accedé rápidamente a las principales funciones.</p>
             </div>
+        </div>
 
-            <button class="logout-button" type="button" (click)="cerrarSesion()">
-                Cerrar sesión
+        <div class="summary-grid">
+            <button type="button" class="summary-card" (click)="cambiarSeccion('usuarios')">
+                <span class="summary-icon">♙</span>
+                <span class="summary-label">Usuarios</span>
+                <strong>{{ usuarios().length }}</strong>
+                <span class="summary-foot">Ver y administrar usuarios →</span>
             </button>
 
+            <button type="button" class="summary-card" (click)="cambiarSeccion('medicos')">
+                <span class="summary-icon">✚</span>
+                <span class="summary-label">Médicos registrados</span>
+                <strong>{{ medicos().length }}</strong>
+                <span class="summary-foot">Consultar profesionales →</span>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarSeccion('pacientes')">
+                <span class="summary-icon">♡</span>
+                <span class="summary-label">Pacientes registrados</span>
+                <strong>{{ pacientes().length }}</strong>
+                <span class="summary-foot">Consultar pacientes →</span>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarSeccion('solicitudes')">
+                <span class="summary-icon">▤</span>
+                <span class="summary-label">Solicitudes pendientes</span>
+                <strong>{{ contarPendientes() }}</strong>
+                <span class="summary-foot">Revisar solicitudes →</span>
+            </button>
         </div>
 
-    </div>
-
-    <div class="admin-content">
-
-        <div class="options-grid">
-
-            <div class="option-card">
-                <h3>Turnos</h3>
-
-                <p>
-                    Reservar, consultar y cancelar turnos.
-                </p>
+        <div class="panel-card quick-actions">
+            <div>
+                <h3>Acciones rápidas</h3>
+                <p>Creá una cuenta o actualizá la información del panel.</p>
             </div>
 
-            <div class="option-card">
-                <h3>Médicos</h3>
+            <div class="action-buttons">
+                <button type="button" class="btn btn-primary" (click)="cambiarSeccion('crearUsuario')">
+                    + Crear usuario
+                </button>
 
-                <p>
-                    Consultar los médicos y gestionar el valor de sus consultas.
-                </p>
+                <button type="button" class="btn btn-secondary"
+                    (click)="cargarUsuarios(); cargarMedicos(); cargarPacientes(); cargarSolicitudes()">
+                    ↻ Actualizar información
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- LISTADO GENERAL DE USUARIOS -->
+    <section *ngIf="seccionActiva() === 'usuarios'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">CUENTAS Y ACCESOS</span>
+                <h2>Usuarios</h2>
+                <p>Administrá los datos personales y el estado de las cuentas.</p>
             </div>
 
-            <div class="option-card">
-                <h3>Pacientes</h3>
+            <button type="button" class="btn btn-primary" (click)="cambiarSeccion('crearUsuario')">
+                + Crear usuario
+            </button>
+        </div>
 
-                <p>
-                    Consultar la información disponible de los pacientes.
-                </p>
+        <div *ngIf="errorUsuarios()" class="alert alert-error" role="alert">
+            {{ errorUsuarios() }}
+        </div>
+
+        <div class="panel-card">
+            <div class="table-toolbar">
+                <div>
+                    <strong>Listado de cuentas</strong>
+                    <span>Total de usuarios: {{ usuarios().length }}</span>
+                </div>
+
+                <button type="button" class="btn btn-secondary" [disabled]="cargandoUsuarios()"
+                    (click)="cargarUsuarios()">
+                    {{ cargandoUsuarios() ? 'Cargando...' : '↻ Actualizar' }}
+                </button>
             </div>
 
+            <div *ngIf="cargandoUsuarios()" class="loading-state">
+                Cargando usuarios...
+            </div>
+
+            <div *ngIf="!cargandoUsuarios() && usuarios().length === 0" class="empty-state">
+                No hay usuarios para mostrar.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoUsuarios() && usuarios().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Documento</th>
+                            <th>Apellido y nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let usuario of usuarios()">
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.documento }}</td>
+                            <td>
+                                <strong>{{ usuario.apellidos }}, {{ usuario.nombres }}</strong>
+                            </td>
+                            <td>{{ usuario.email }}</td>
+                            <td>
+                                <span class="role-label">{{ usuario.rol }}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge"
+                                    [class.status-active]="usuario.estado?.toLowerCase() === 'activo'"
+                                    [class.status-inactive]="usuario.estado?.toLowerCase() !== 'activo'">
+                                    {{ usuario.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button type="button" class="btn btn-secondary btn-small"
+                                        (click)="editarUsuario(usuario)">
+                                        Editar
+                                    </button>
+
+                                    <button type="button" class="btn btn-small"
+                                        [class.btn-enable]="usuario.estado?.toLowerCase() !== 'activo'"
+                                        [class.btn-danger]="usuario.estado?.toLowerCase() === 'activo'"
+                                        (click)="cambiarEstadoUsuario(usuario)">
+                                        {{ usuario.estado?.toLowerCase() === 'activo'
+                                        ? 'Dar de baja'
+                                        : 'Activar' }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CREAR USUARIO -->
+    <section *ngIf="seccionActiva() === 'crearUsuario'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">NUEVA CUENTA</span>
+                <h2>Crear usuario</h2>
+                <p>Completá los datos para registrar una cuenta nueva.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" (click)="cambiarSeccion('usuarios')">
+                ← Volver a usuarios
+            </button>
         </div>
 
-    </div>
-
-    <div class="success-toast">
-
-        <div class="toast-icon">
-            ✓
+        <div *ngIf="errorUsuarios()" class="alert alert-error" role="alert">
+            {{ errorUsuarios() }}
         </div>
 
-        <div>
-            <strong>Sesión iniciada</strong>
+        <form class="panel-card admin-form" (ngSubmit)="crearUsuario()">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nuevoDocumento">Documento *</label>
+                    <input id="nuevoDocumento" name="nuevoDocumento" type="text" [(ngModel)]="nuevoUsuario.documento"
+                        required />
+                </div>
 
-            <p>
-                Bienvenido/a al panel de administración.
-            </p>
+                <div class="form-group">
+                    <label for="nuevoApellido">Apellidos *</label>
+                    <input id="nuevoApellido" name="nuevoApellido" type="text" [(ngModel)]="nuevoUsuario.apellidos"
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevoNombre">Nombres *</label>
+                    <input id="nuevoNombre" name="nuevoNombre" type="text" [(ngModel)]="nuevoUsuario.nombres"
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevoEmail">Email *</label>
+                    <input id="nuevoEmail" name="nuevoEmail" type="email" [(ngModel)]="nuevoUsuario.email" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevaClave">Contraseña *</label>
+                    <input id="nuevaClave" name="nuevaClave" type="password" [(ngModel)]="nuevoUsuario.clave"
+                        minlength="8" autocomplete="new-password" required />
+                    <small>Mínimo 8 caracteres.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevoRol">Rol *</label>
+                    <select id="nuevoRol" name="nuevoRol" [(ngModel)]="nuevoUsuario.rol" required>
+                        <option value="Paciente">Paciente</option>
+                        <option value="Medico">Médico</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nuevoEstado">Estado *</label>
+                    <select id="nuevoEstado" name="nuevoEstado" [(ngModel)]="nuevoUsuario.estado" required>
+                        <option value="activo">Activo</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+
+
+                <ng-container *ngIf="nuevoUsuario.rol === 'Medico'">
+                    <div class="form-group">
+                        <label for="nuevaMatricula">Matrícula profesional (opcional)</label>
+                        <input id="nuevaMatricula" name="nuevaMatricula" type="number" min="1"
+                            [(ngModel)]="nuevoUsuario.matricula" />
+                        <small>
+                            Podés completarla ahora o dejarla vacía para que el médico la registre después.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nuevoValorConsulta">Valor de consulta (opcional)</label>
+                        <input id="nuevoValorConsulta" name="nuevoValorConsulta" type="number" min="1" step="0.01"
+                            [(ngModel)]="nuevoUsuario.valor_consulta" />
+                        <small>
+                            Si completás el valor de consulta, también tenés que ingresar la matrícula.
+                            Si dejás ambos campos vacíos, el médico los completará al iniciar sesión.
+                        </small>
+                    </div>
+                </ng-container>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="cambiarSeccion('usuarios')">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-primary" [disabled]="creandoUsuario()">
+                    {{ creandoUsuario() ? 'Creando usuario...' : 'Crear usuario' }}
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- MÉDICOS -->
+    <section *ngIf="seccionActiva() === 'medicos'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">EQUIPO PROFESIONAL</span>
+                <h2>Médicos</h2>
+                <p>Listado de profesionales registrados.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoMedicos()" (click)="cargarMedicos()">
+                {{ cargandoMedicos() ? 'Cargando...' : '↻ Actualizar' }}
+            </button>
         </div>
-    </div>
 
+        <div *ngIf="errorMedicos()" class="alert alert-error" role="alert">
+            {{ errorMedicos() }}
+        </div>
+
+        <div class="panel-card">
+            <div *ngIf="cargandoMedicos()" class="loading-state">
+                Cargando médicos...
+            </div>
+
+            <div *ngIf="!cargandoMedicos() && medicos().length === 0" class="empty-state">
+                No hay médicos para mostrar.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoMedicos() && medicos().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID médico</th>
+                            <th>Documento</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Matrícula</th>
+                            <th>Valor consulta</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let medico of medicos()">
+                            <td>{{ medico.id }}</td>
+                            <td>{{ medico.documento }}</td>
+                            <td>{{ medico.nombre }}</td>
+                            <td>{{ medico.email }}</td>
+                            <td>{{ medico.matricula }}</td>
+                            <td>{{ formatearImporte(medico.valor_consulta) }}</td>
+                            <td>
+                                <span class="status-badge"
+                                    [class.status-active]="medico.estado?.toLowerCase() === 'activo'"
+                                    [class.status-inactive]="medico.estado?.toLowerCase() !== 'activo'">
+                                    {{ medico.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PACIENTES -->
+    <section *ngIf="seccionActiva() === 'pacientes'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">CUENTAS DE PACIENTES</span>
+                <h2>Pacientes</h2>
+                <p>Listado de pacientes registrados.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoPacientes()"
+                (click)="cargarPacientes()">
+                {{ cargandoPacientes() ? 'Cargando...' : '↻ Actualizar' }}
+            </button>
+        </div>
+
+        <div *ngIf="errorPacientes()" class="alert alert-error" role="alert">
+            {{ errorPacientes() }}
+        </div>
+
+        <div class="panel-card">
+            <div *ngIf="cargandoPacientes()" class="loading-state">
+                Cargando pacientes...
+            </div>
+
+            <div *ngIf="!cargandoPacientes() && pacientes().length === 0" class="empty-state">
+                No hay pacientes para mostrar.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoPacientes() && pacientes().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID usuario</th>
+                            <th>Documento</th>
+                            <th>Apellido y nombre</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let paciente of pacientes()">
+                            <td>{{ paciente.id }}</td>
+                            <td>{{ paciente.documento }}</td>
+                            <td>
+                                <strong>{{ paciente.apellidos }}, {{ paciente.nombres }}</strong>
+                            </td>
+                            <td>{{ paciente.email }}</td>
+                            <td>
+                                <span class="status-badge"
+                                    [class.status-active]="paciente.estado?.toLowerCase() === 'activo'"
+                                    [class.status-inactive]="paciente.estado?.toLowerCase() !== 'activo'">
+                                    {{ paciente.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLICITUDES DE CORRECCIÓN -->
+    <section *ngIf="seccionActiva() === 'solicitudes'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">GESTIÓN DE TURNOS</span>
+                <h2>Solicitudes de corrección</h2>
+                <p>Revisá y resolvé las solicitudes relacionadas con los turnos.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoSolicitudes()"
+                (click)="cargarSolicitudes()">
+                {{ cargandoSolicitudes() ? 'Cargando...' : '↻ Actualizar' }}
+            </button>
+        </div>
+
+        <div *ngIf="mensajeSolicitudes()" class="success-toast" role="status" aria-live="polite">
+            <span>{{ mensajeSolicitudes() }}</span>
+            <button type="button" class="toast-close" aria-label="Cerrar mensaje" (click)="mensajeSolicitudes.set('')">
+                ✕
+            </button>
+        </div>
+
+        <div *ngIf="errorSolicitudes()" class="alert alert-error" role="alert">
+            {{ errorSolicitudes() }}
+        </div>
+
+        <div class="summary-grid request-summary">
+            <button type="button" class="summary-card" (click)="cambiarEstadoFiltro('Pendiente')">
+                <span class="summary-label">Pendientes</span>
+                <strong>{{ contarEstado('Pendiente') }}</strong>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarEstadoFiltro('Aprobada')">
+                <span class="summary-label">Aprobadas</span>
+                <strong>{{ contarEstado('Aprobada') }}</strong>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarEstadoFiltro('Rechazada')">
+                <span class="summary-label">Rechazadas</span>
+                <strong>{{ contarEstado('Rechazada') }}</strong>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarEstadoFiltro('Todas')">
+                <span class="summary-label">Todas</span>
+                <strong>{{ contarEstado('Todas') }}</strong>
+            </button>
+        </div>
+
+        <div class="panel-card filter-panel">
+            <h3>Buscar y filtrar solicitudes</h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="busquedaSolicitudes">Buscar</label>
+                    <input id="busquedaSolicitudes" name="busquedaSolicitudes" type="text"
+                        placeholder="Médico, paciente, motivo o turno..." [(ngModel)]="busqueda" />
+                </div>
+
+                <div class="form-group">
+                    <label for="fechaDesde">Desde</label>
+                    <input id="fechaDesde" name="fechaDesde" type="date" [(ngModel)]="fechaDesde" />
+                </div>
+
+                <div class="form-group">
+                    <label for="fechaHasta">Hasta</label>
+                    <input id="fechaHasta" name="fechaHasta" type="date" [(ngModel)]="fechaHasta" />
+                </div>
+
+                <div class="form-group">
+                    <label for="ordenFecha">Ordenar por fecha</label>
+                    <select id="ordenFecha" name="ordenFecha" [(ngModel)]="ordenFecha">
+                        <option value="recientes">Más recientes primero</option>
+                        <option value="antiguas">Más antiguas primero</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-footer">
+                <div class="status-tabs">
+                    <button type="button" class="btn" [class.btn-primary]="estadoFiltro() === 'Pendiente'"
+                        (click)="cambiarEstadoFiltro('Pendiente')">
+                        Pendientes
+                    </button>
+
+                    <button type="button" class="btn" [class.btn-primary]="estadoFiltro() === 'Aprobada'"
+                        (click)="cambiarEstadoFiltro('Aprobada')">
+                        Aprobadas
+                    </button>
+
+                    <button type="button" class="btn" [class.btn-primary]="estadoFiltro() === 'Rechazada'"
+                        (click)="cambiarEstadoFiltro('Rechazada')">
+                        Rechazadas
+                    </button>
+
+                    <button type="button" class="btn" [class.btn-primary]="estadoFiltro() === 'Todas'"
+                        (click)="cambiarEstadoFiltro('Todas')">
+                        Todas
+                    </button>
+                </div>
+
+                <button type="button" class="btn btn-secondary" (click)="limpiarFiltros()">
+                    Limpiar filtros
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="cargandoSolicitudes()" class="loading-state">
+            Cargando solicitudes...
+        </div>
+
+        <div *ngIf="!cargandoSolicitudes() && solicitudesFiltradas().length === 0" class="panel-card empty-state">
+            No se encontraron solicitudes con los filtros seleccionados.
+        </div>
+
+        <article class="request-card" *ngFor="let solicitud of solicitudesFiltradas()">
+            <div class="request-header">
+                <div>
+                    <span class="eyebrow">SOLICITUD #{{ solicitud.id }}</span>
+                    <h3>Turno #{{ solicitud.id_reserva }}</h3>
+                </div>
+
+                <span class="status-badge" [class.status-pending]="solicitud.estado_solicitud === 'Pendiente'"
+                    [class.status-active]="solicitud.estado_solicitud === 'Aprobada'"
+                    [class.status-inactive]="solicitud.estado_solicitud === 'Rechazada'">
+                    {{ solicitud.estado_solicitud }}
+                </span>
+            </div>
+
+            <div class="request-details">
+                <div>
+                    <span class="detail-label">Médico</span>
+                    <strong>{{ solicitud.medico?.nombre || 'No disponible' }}</strong>
+                    <small>{{ solicitud.medico?.email || '' }}</small>
+                </div>
+
+                <div>
+                    <span class="detail-label">Paciente</span>
+                    <strong>{{ solicitud.paciente?.nombre || 'No disponible' }}</strong>
+                    <small>{{ solicitud.paciente?.email || '' }}</small>
+                </div>
+
+                <div>
+                    <span class="detail-label">Fecha de solicitud</span>
+                    <strong>{{ formatearFecha(solicitud.fecha_solicitud) }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Fecha del turno</span>
+                    <strong>
+                        {{ solicitud.fecha_reserva
+                        ? formatearFecha(solicitud.fecha_reserva)
+                        : 'No disponible' }}
+                    </strong>
+                </div>
+            </div>
+
+            <div class="state-comparison">
+                <div>
+                    <span class="detail-label">Estado actual</span>
+                    <strong>{{ solicitud.estado_actual }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Estado solicitado</span>
+                    <strong>{{ solicitud.estado_solicitado }}</strong>
+                </div>
+            </div>
+
+            <div class="request-reason">
+                <strong>Motivo de la solicitud</strong>
+                <p>{{ solicitud.motivo }}</p>
+            </div>
+
+            <div class="request-response" *ngIf="solicitud.respuesta_admin">
+                <strong>Respuesta del administrador</strong>
+                <p>{{ solicitud.respuesta_admin }}</p>
+            </div>
+
+            <div class="request-actions" *ngIf="solicitud.estado_solicitud === 'Pendiente'">
+                <div class="form-group">
+                    <label [for]="'respuesta-' + solicitud.id">
+                        Respuesta (opcional)
+                    </label>
+
+                    <textarea [id]="'respuesta-' + solicitud.id" [name]="'respuesta-' + solicitud.id" rows="2"
+                        placeholder="Escribí una respuesta para el paciente..."
+                        [(ngModel)]="respuestas[solicitud.id]"></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-danger" [disabled]="procesandoId() !== null"
+                        (click)="resolverSolicitud(solicitud, 'Rechazada')">
+                        {{ procesandoId() === solicitud.id
+                        ? 'Procesando...'
+                        : 'Rechazar solicitud' }}
+                    </button>
+
+                    <button type="button" class="btn btn-primary" [disabled]="procesandoId() !== null"
+                        (click)="resolverSolicitud(solicitud, 'Aprobada')">
+                        {{ procesandoId() === solicitud.id
+                        ? 'Procesando...'
+                        : 'Aprobar solicitud' }}
+                    </button>
+                </div>
+            </div>
+        </article>
+    </section>
+</div>
+
+<!-- VENTANA EMERGENTE PARA EDITAR USUARIO -->
+<div class="modal-backdrop" *ngIf="usuarioEditando() as usuario" (click)="cancelarEdicion()">
+    <section class="modal-edicion" role="dialog" aria-modal="true" aria-labelledby="tituloEdicion"
+        (click)="$event.stopPropagation()">
+
+        <header class="modal-header">
+            <div>
+                <span class="eyebrow">CUENTA #{{ usuario.id }}</span>
+                <h2 id="tituloEdicion">Editar usuario</h2>
+                <p>Modificá los datos de la cuenta seleccionada.</p>
+            </div>
+
+            <button type="button" class="modal-close" aria-label="Cerrar ventana" [disabled]="guardandoEdicion()"
+                (click)="cancelarEdicion()">
+                ✕
+            </button>
+        </header>
+
+        <div *ngIf="errorEdicion()" class="alert alert-error" role="alert">
+            {{ errorEdicion() }}
+        </div>
+
+        <form class="admin-form" (ngSubmit)="guardarEdicionUsuario()">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="editarDocumento">Documento *</label>
+                    <input id="editarDocumento" name="editarDocumento" type="text"
+                        [(ngModel)]="datosEdicionUsuario.documento" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editarNombres">Nombres *</label>
+                    <input id="editarNombres" name="editarNombres" type="text" [(ngModel)]="datosEdicionUsuario.nombres"
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editarApellidos">Apellidos *</label>
+                    <input id="editarApellidos" name="editarApellidos" type="text"
+                        [(ngModel)]="datosEdicionUsuario.apellidos" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editarEmail">Email *</label>
+                    <input id="editarEmail" name="editarEmail" type="email" [(ngModel)]="datosEdicionUsuario.email"
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editarEstado">Estado *</label>
+                    <select id="editarEstado" name="editarEstado" [(ngModel)]="datosEdicionUsuario.estado" required>
+                        <option value="activo">Activo</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-hint">
+                El rol y la contraseña no se modifican desde este formulario.
+            </div>
+
+            <footer class="modal-actions">
+                <button type="button" class="btn btn-secondary" [disabled]="guardandoEdicion()"
+                    (click)="cancelarEdicion()">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-primary" [disabled]="guardandoEdicion()">
+                    {{ guardandoEdicion() ? 'Guardando cambios...' : 'Guardar cambios' }}
+                </button>
+            </footer>
+        </form>
+    </section>
+</div>
+
+
+<!-- MODAL PERSONALIZADO PARA CONFIRMACIONES -->
+<div class="modal-backdrop modal-confirmacion-backdrop" *ngIf="modalAdmin() as modal" (click)="cerrarModalAdmin()">
+    <section class="modal-confirmacion" role="dialog" aria-modal="true" aria-labelledby="tituloModalAdmin"
+        aria-describedby="mensajeModalAdmin" (click)="$event.stopPropagation()">
+        <div class="modal-icono" [class.modal-icono-peligro]="modalEsPeligroso(modal)">
+            <span *ngIf="modal.accion.tipo === 'cerrarSesion'">↪</span>
+            <span *ngIf="modal.accion.tipo === 'cambiarEstadoUsuario'">♙</span>
+            <span *ngIf="modal.accion.tipo === 'resolverSolicitud'">▤</span>
+        </div>
+
+        <button type="button" class="modal-close modal-confirmacion-close" aria-label="Cerrar ventana"
+            [disabled]="procesandoAccionModal()" (click)="cerrarModalAdmin()">
+            ✕
+        </button>
+
+        <div class="modal-confirmacion-contenido">
+            <span class="eyebrow">CLÍNICA MÉDICA</span>
+
+            <h2 id="tituloModalAdmin">{{ modal.titulo }}</h2>
+
+            <p id="mensajeModalAdmin">{{ modal.mensaje }}</p>
+        </div>
+
+        <footer class="modal-confirmacion-acciones">
+            <button type="button" class="btn btn-secondary" [disabled]="procesandoAccionModal()"
+                (click)="cerrarModalAdmin()">
+                Cancelar
+            </button>
+
+            <button type="button" class="btn" [class.btn-danger]="modalEsPeligroso(modal)"
+                [class.btn-primary]="!modalEsPeligroso(modal)" [disabled]="procesandoAccionModal()"
+                (click)="confirmarAccionModal()">
+                {{
+                procesandoAccionModal()
+                ? 'Procesando...'
+                : modal.textoConfirmar
+                }}
+            </button>
+        </footer>
+    </section>
 </div>

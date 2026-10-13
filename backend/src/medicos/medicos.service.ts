@@ -80,6 +80,24 @@ export class MedicosService {
         return this.medicoRepository.save(medico);
     }
 
+    async obtenerPorUsuario(usuario: { id: number }) {
+        const medico = await this.medicoRepository.findOne({
+            where: {
+                id_usuario: usuario.id,
+            },
+        });
+
+        if (!medico) {
+            return null;
+        }
+
+        return {
+            id: medico.id,
+            matricula: medico.matricula,
+            valor_consulta: medico.valor_consulta,
+        };
+    }
+
     async modificarValorConsulta(
         idMedico: number,
         nuevoValor: number,
