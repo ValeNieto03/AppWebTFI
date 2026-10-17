@@ -1,14 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum EstadoUsuario {
-  ACTIVO = 'activo',
-  BAJA = 'baja',
+  ACTIVO = 'ACTIVO',
+  BAJA = 'BAJA',
 }
 
 export enum RolUsuario {
-  MEDICO = 'Medico',
-  PACIENTE = 'Paciente',
-  ADMINISTRADOR = 'Administrador',
+  MEDICO = 'MEDICO',
+  PACIENTE = 'PACIENTE',
+  ADMINISTRADOR = 'ADMINISTRADOR',
 }
 
 @Entity('usuarios')

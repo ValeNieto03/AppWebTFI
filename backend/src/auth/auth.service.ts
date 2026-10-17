@@ -5,6 +5,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { LoginDto } from '../usuarios/dto/login.dto.js';
+import { EstadoUsuario } from '../entities/usuario.entity.js';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -34,7 +35,7 @@ export class AuthService {
       );
     }
 
-    if (usuario.estado !== 'activo') {
+    if (usuario.estado !== EstadoUsuario.ACTIVO) {
       throw new UnauthorizedException(
         'El usuario no está activo',
       );

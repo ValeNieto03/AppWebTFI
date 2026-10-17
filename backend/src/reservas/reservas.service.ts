@@ -13,7 +13,7 @@ import {
 } from '../entities/reserva.entity.js';
 
 import { Medico } from '../entities/medico.entity.js';
-import { Usuario } from '../entities/usuario.entity.js';
+import { RolUsuario, Usuario } from '../entities/usuario.entity.js';
 
 import {
   SolicitudCorreccionReserva,
@@ -533,9 +533,9 @@ export class ReservasService {
   ) {
     let idPaciente: number;
 
-    if (usuarioLogueado.rol === 'Paciente') {
+    if (usuarioLogueado.rol === RolUsuario.PACIENTE) {
       idPaciente = usuarioLogueado.id;
-    } else if (usuarioLogueado.rol === 'Administrador') {
+    } else if (usuarioLogueado.rol === RolUsuario.ADMINISTRADOR) {
       if (!crearReservaDto.id_paciente) {
         throw new BadRequestException(
           'El administrador debe indicar el paciente',
@@ -553,7 +553,7 @@ export class ReservasService {
       id: idPaciente,
     });
 
-    if (!paciente || paciente.rol !== 'Paciente') {
+    if (!paciente || paciente.rol !== RolUsuario.PACIENTE) {
       throw new BadRequestException(
         'El usuario no es un paciente',
       );

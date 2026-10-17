@@ -4,14 +4,14 @@ import { EstadoReserva } from '../../entities/reserva.entity.js';
 
 export class CambiarEstadoReservaDto {
   @ApiProperty({
-    example: 'Atendido',
+    example: 'ATENDIDO',
     description: 'Nuevo estado de la reserva',
     enum: [EstadoReserva.ATENDIDO, EstadoReserva.AUSENTE],
   })
   @IsIn(
     [EstadoReserva.ATENDIDO, EstadoReserva.AUSENTE],
     {
-      message: 'El estado debe ser Atendido o Ausente',
+      message: 'El estado debe ser ATENDIDO o AUSENTE',
     },
   )
   estado: EstadoReserva;
