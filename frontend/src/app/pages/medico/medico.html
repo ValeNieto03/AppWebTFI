@@ -16,7 +16,6 @@
     </header>
 
     <main class="doctor-content">
-        <!-- Resumen compacto -->
         <section class="summary-grid" aria-label="Resumen de turnos">
             <article class="summary-item">
                 <span class="summary-icon">▣</span>
@@ -30,7 +29,7 @@
                 <span class="summary-icon">◷</span>
                 <div>
                     <p class="summary-label">Por atender</p>
-                    <p class="summary-number">{{ contarPorEstado('Activo') }}</p>
+                    <p class="summary-number">{{ contarPorEstado('ACTIVO') }}</p>
                 </div>
             </article>
 
@@ -38,12 +37,11 @@
                 <span class="summary-icon">✓</span>
                 <div>
                     <p class="summary-label">Atendidas</p>
-                    <p class="summary-number">{{ contarPorEstado('Atendido') }}</p>
+                    <p class="summary-number">{{ contarPorEstado('ATENDIDO') }}</p>
                 </div>
             </article>
         </section>
 
-        <!-- Importe independiente -->
         <section class="importe-card">
             <div class="importe-icon" aria-hidden="true">$</div>
 
@@ -69,7 +67,6 @@
             </div>
         </section>
 
-        <!-- Agenda -->
         <section class="appointments-section">
             <div class="section-heading">
                 <div>
@@ -80,7 +77,6 @@
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div class="date-filter">
                 <label for="fechaTurnos">
                     <span>Filtrar por fecha</span>
@@ -104,7 +100,6 @@
                 </label>
             </div>
 
-            <!-- Mensajes -->
             <div class="feedback success-message" *ngIf="mensaje()" role="status">
                 {{ mensaje() }}
             </div>
@@ -117,30 +112,29 @@
                 Cargando reservas...
             </div>
 
-            <!-- Pestañas de estados -->
             <nav class="status-tabs" aria-label="Filtrar reservas por estado">
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'activo'"
                     [attr.aria-pressed]="pestanaActiva() === 'activo'" (click)="pestanaActiva.set('activo')">
                     Por atender
-                    <span class="tab-count">{{ contarPorEstado('Activo') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('ACTIVO') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'atendido'"
                     [attr.aria-pressed]="pestanaActiva() === 'atendido'" (click)="pestanaActiva.set('atendido')">
                     Atendidas
-                    <span class="tab-count">{{ contarPorEstado('Atendido') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('ATENDIDO') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'ausente'"
                     [attr.aria-pressed]="pestanaActiva() === 'ausente'" (click)="pestanaActiva.set('ausente')">
                     Ausentes
-                    <span class="tab-count">{{ contarPorEstado('Ausente') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('AUSENTE') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'cancelado'"
                     [attr.aria-pressed]="pestanaActiva() === 'cancelado'" (click)="pestanaActiva.set('cancelado')">
                     Canceladas
-                    <span class="tab-count">{{ contarPorEstado('Cancelado') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('CANCELADO') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'todas'"
@@ -150,7 +144,6 @@
                 </button>
             </nav>
 
-            <!-- Estado vacío -->
             <div class="empty-message" *ngIf="!cargando() && !error() && reservasFiltradas().length === 0">
                 <ng-container [ngSwitch]="pestanaActiva()">
                     <span *ngSwitchCase="'activo'">
@@ -175,7 +168,6 @@
                 </ng-container>
             </div>
 
-            <!-- Listado filtrado y ordenado -->
             <div class="appointments-list" *ngIf="!cargando()">
                 <article class="appointment-card" *ngFor="let reserva of reservasFiltradas()">
                     <div class="appointment-info">
@@ -206,37 +198,36 @@
 
                     <div class="appointment-actions">
                         <span class="status" [ngClass]="{
-                'status-active': reserva.estado.toLowerCase() === 'activo',
-                'status-attended': reserva.estado.toLowerCase() === 'atendido',
-                'status-absent': reserva.estado.toLowerCase() === 'ausente',
-                'status-canceled': reserva.estado.toLowerCase() === 'cancelado'
-              }">
+                                'status-active': reserva.estado.trim().toUpperCase() === 'ACTIVO',
+                                'status-attended': reserva.estado.trim().toUpperCase() === 'ATENDIDO',
+                                'status-absent': reserva.estado.trim().toUpperCase() === 'AUSENTE',
+                                'status-canceled': reserva.estado.trim().toUpperCase() === 'CANCELADO'
+                            }">
                             {{ reserva.estado }}
                         </span>
 
-                        <!-- Acciones disponibles únicamente para reservas activas -->
-                        <div class="action-buttons" *ngIf="reserva.estado.toLowerCase() === 'activo'">
-                            <button type="button" class="attended-button" [disabled]="actualizandoId() === reserva.id"
-                                (click)="cambiarEstado(reserva, 'Atendido')">
+                        <div class="action-buttons" *ngIf="reserva.estado.trim().toUpperCase() === 'ACTIVO'">
+                            <button type="button" class="attended-button"
+                                [disabled]="actualizandoId() === reserva.id || procesandoConfirmacion()"
+                                (click)="cambiarEstado(reserva, 'ATENDIDO')">
                                 Marcar atendido
                             </button>
 
-                            <button type="button" class="absent-button" [disabled]="actualizandoId() === reserva.id"
-                                (click)="cambiarEstado(reserva, 'Ausente')">
+                            <button type="button" class="absent-button"
+                                [disabled]="actualizandoId() === reserva.id || procesandoConfirmacion()"
+                                (click)="cambiarEstado(reserva, 'AUSENTE')">
                                 Marcar ausente
                             </button>
                         </div>
 
-                        <!-- Solicitud de corrección para atendidos o ausentes -->
                         <button *ngIf="
-                reserva.estado.toLowerCase() === 'atendido' ||
-                reserva.estado.toLowerCase() === 'ausente'
-              " type="button" class="correction-button" [disabled]="enviandoCorreccion()"
+                                reserva.estado.trim().toUpperCase() === 'ATENDIDO' ||
+                                reserva.estado.trim().toUpperCase() === 'AUSENTE'
+                            " type="button" class="correction-button" [disabled]="enviandoCorreccion()"
                             (click)="abrirFormularioCorreccion(reserva)">
                             Solicitar corrección
                         </button>
 
-                        <!-- Formulario de corrección -->
                         <div class="correction-form" *ngIf="reservaEnCorreccion() === reserva.id">
                             <h4>Solicitar corrección del turno</h4>
 
@@ -251,8 +242,8 @@
 
                             <select [id]="'estado-' + reserva.id" [(ngModel)]="estadoSolicitado"
                                 [disabled]="enviandoCorreccion()">
-                                <option value="Atendido">Atendido</option>
-                                <option value="Ausente">Ausente</option>
+                                <option value="ATENDIDO">Atendido</option>
+                                <option value="AUSENTE">Ausente</option>
                             </select>
 
                             <label [for]="'motivo-' + reserva.id">
@@ -292,19 +283,19 @@
     </main>
 </div>
 
-
 <!-- MODAL PERSONALIZADO PARA CONFIRMAR EL ESTADO DEL TURNO -->
 <div class="confirmation-backdrop" *ngIf="modalConfirmacion() as modal" (click)="cerrarModalConfirmacion()">
     <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title"
         aria-describedby="confirmation-message" (click)="$event.stopPropagation()">
+
         <button type="button" class="confirmation-close" aria-label="Cerrar ventana"
             [disabled]="procesandoConfirmacion()" (click)="cerrarModalConfirmacion()">
             ✕
         </button>
 
-        <div class="confirmation-icon" [class.confirmation-icon-danger]="modal.estado === 'Ausente'">
-            <span *ngIf="modal.estado === 'Atendido'">✓</span>
-            <span *ngIf="modal.estado === 'Ausente'">!</span>
+        <div class="confirmation-icon" [class.confirmation-icon-danger]="modal.estado === 'AUSENTE'">
+            <span *ngIf="modal.estado === 'ATENDIDO'">✓</span>
+            <span *ngIf="modal.estado === 'AUSENTE'">!</span>
         </div>
 
         <div class="confirmation-content">
@@ -334,7 +325,7 @@
             </button>
 
             <button type="button" class="confirmation-submit"
-                [class.confirmation-submit-danger]="modal.estado === 'Ausente'" [disabled]="procesandoConfirmacion()"
+                [class.confirmation-submit-danger]="modal.estado === 'AUSENTE'" [disabled]="procesandoConfirmacion()"
                 (click)="confirmarCambioEstado()">
                 {{
                 procesandoConfirmacion()

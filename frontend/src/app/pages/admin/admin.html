@@ -41,7 +41,6 @@
         </button>
     </nav>
 
-    <!-- MENSAJE TEMPORAL DE USUARIOS -->
     <div *ngIf="mensajeUsuarios()" class="success-toast" role="status" aria-live="polite">
         <span>{{ mensajeUsuarios() }}</span>
         <button type="button" class="toast-close" aria-label="Cerrar mensaje" (click)="mensajeUsuarios.set('')">
@@ -256,22 +255,21 @@
                 <div class="form-group">
                     <label for="nuevoRol">Rol *</label>
                     <select id="nuevoRol" name="nuevoRol" [(ngModel)]="nuevoUsuario.rol" required>
-                        <option value="Paciente">Paciente</option>
-                        <option value="Medico">Médico</option>
-                        <option value="Administrador">Administrador</option>
+                        <option value="PACIENTE">Paciente</option>
+                        <option value="MEDICO">Médico</option>
+                        <option value="ADMINISTRADOR">Administrador</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="nuevoEstado">Estado *</label>
                     <select id="nuevoEstado" name="nuevoEstado" [(ngModel)]="nuevoUsuario.estado" required>
-                        <option value="activo">Activo</option>
-                        <option value="baja">Baja</option>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="BAJA">Baja</option>
                     </select>
                 </div>
 
-
-                <ng-container *ngIf="nuevoUsuario.rol === 'Medico'">
+                <ng-container *ngIf="nuevoUsuario.rol === 'MEDICO'">
                     <div class="form-group">
                         <label for="nuevaMatricula">Matrícula profesional (opcional)</label>
                         <input id="nuevaMatricula" name="nuevaMatricula" type="number" min="1"
@@ -690,8 +688,8 @@
                 <div class="form-group">
                     <label for="editarEstado">Estado *</label>
                     <select id="editarEstado" name="editarEstado" [(ngModel)]="datosEdicionUsuario.estado" required>
-                        <option value="activo">Activo</option>
-                        <option value="baja">Baja</option>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="BAJA">Baja</option>
                     </select>
                 </div>
             </div>
@@ -714,11 +712,11 @@
     </section>
 </div>
 
-
 <!-- MODAL PERSONALIZADO PARA CONFIRMACIONES -->
 <div class="modal-backdrop modal-confirmacion-backdrop" *ngIf="modalAdmin() as modal" (click)="cerrarModalAdmin()">
     <section class="modal-confirmacion" role="dialog" aria-modal="true" aria-labelledby="tituloModalAdmin"
         aria-describedby="mensajeModalAdmin" (click)="$event.stopPropagation()">
+
         <div class="modal-icono" [class.modal-icono-peligro]="modalEsPeligroso(modal)">
             <span *ngIf="modal.accion.tipo === 'cerrarSesion'">↪</span>
             <span *ngIf="modal.accion.tipo === 'cambiarEstadoUsuario'">♙</span>
@@ -732,9 +730,7 @@
 
         <div class="modal-confirmacion-contenido">
             <span class="eyebrow">CLÍNICA MÉDICA</span>
-
             <h2 id="tituloModalAdmin">{{ modal.titulo }}</h2>
-
             <p id="mensajeModalAdmin">{{ modal.mensaje }}</p>
         </div>
 

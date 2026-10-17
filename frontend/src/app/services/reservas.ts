@@ -1,6 +1,10 @@
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+    HttpClient,
+    HttpHeaders,
+    HttpParams,
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface MedicoReserva {
@@ -58,7 +62,9 @@ export interface CrearReservaDatos {
     fecha_hora: string;
 }
 
-export type EstadoSolicitadoCorreccion = 'Atendido' | 'Ausente';
+export type EstadoReservaMedico = 'ATENDIDO' | 'AUSENTE';
+
+export type EstadoSolicitadoCorreccion = EstadoReservaMedico;
 
 export interface SolicitudCorreccionReserva {
     id: number;
@@ -163,7 +169,7 @@ export class ReservasService {
 
     cambiarEstadoTurno(
         id: number,
-        estado: 'Atendido' | 'Ausente',
+        estado: EstadoReservaMedico,
     ): Observable<CambiarEstadoReservaRespuesta> {
         return this.http.patch<CambiarEstadoReservaRespuesta>(
             `${this.apiUrl}/${id}/estado`,

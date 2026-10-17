@@ -13,7 +13,10 @@ import {
 } from '../entities/reserva.entity.js';
 
 import { Medico } from '../entities/medico.entity.js';
-import { Usuario } from '../entities/usuario.entity.js';
+import {
+  Usuario,
+  RolUsuario,
+} from '../entities/usuario.entity.js';
 
 import {
   SolicitudCorreccionReserva,
@@ -45,10 +48,6 @@ export class ReservasService {
     @InjectRepository(SolicitudCorreccionReserva)
     private readonly solicitudRepository: Repository<SolicitudCorreccionReserva>,
   ) { }
-
-  // =====================================================
-  // LISTAR TODAS LAS RESERVAS (ADMINISTRADOR)
-  // =====================================================
 
   async obtenerTodas() {
     const reservas = await this.reservaRepository.find();
@@ -102,10 +101,6 @@ export class ReservasService {
       }),
     );
   }
-
-  // =====================================================
-  // LISTAR RESERVAS DE UN PACIENTE
-  // =====================================================
 
   async obtenerPorPaciente(idPaciente: number) {
     const reservas = await this.reservaRepository.find({
@@ -174,10 +169,6 @@ export class ReservasService {
       reservas: reservasConDatos,
     };
   }
-
-  // =====================================================
-  // LISTAR RESERVAS DE UN MÉDICO
-  // =====================================================
 
   async obtenerPorMedico(
     idUsuarioMedico: number,
@@ -249,10 +240,6 @@ export class ReservasService {
     };
   }
 
-  // =====================================================
-  // CAMBIAR ESTADO DE UNA RESERVA (MÉDICO)
-  // =====================================================
-
   async cambiarEstado(
     idReserva: number,
     idUsuarioMedico: number,
@@ -299,10 +286,6 @@ export class ReservasService {
 
     return this.reservaRepository.save(reserva);
   }
-
-  // =====================================================
-  // SOLICITAR CORRECCIÓN DE UNA RESERVA (MÉDICO)
-  // =====================================================
 
   async solicitarCorreccion(
     idUsuarioMedico: number,
@@ -390,10 +373,6 @@ export class ReservasService {
     };
   }
 
-  // =====================================================
-  // LISTAR SOLICITUDES DE CORRECCIÓN (ADMINISTRADOR)
-  // =====================================================
-
   async obtenerSolicitudesCorreccion() {
     const solicitudes = await this.solicitudRepository.find({
       order: {
@@ -445,10 +424,6 @@ export class ReservasService {
       }),
     );
   }
-
-  // =====================================================
-  // APROBAR O RECHAZAR UNA SOLICITUD (ADMINISTRADOR)
-  // =====================================================
 
   async resolverSolicitudCorreccion(
     idSolicitud: number,
@@ -523,19 +498,15 @@ export class ReservasService {
     };
   }
 
-  // =====================================================
-  // CREAR UNA RESERVA
-  // =====================================================
-
   async crear(
     crearReservaDto: CrearReservaDto,
     usuarioLogueado: any,
   ) {
     let idPaciente: number;
 
-    if (usuarioLogueado.rol === 'Paciente') {
+    if (usuarioLogueado.rol === RolUsuario.PACIENTE) {
       idPaciente = usuarioLogueado.id;
-    } else if (usuarioLogueado.rol === 'Administrador') {
+    } else if (usuarioLogueado.rol === RolUsuario.ADMINISTRADOR) {
       if (!crearReservaDto.id_paciente) {
         throw new BadRequestException(
           'El administrador debe indicar el paciente',
@@ -553,7 +524,7 @@ export class ReservasService {
       id: idPaciente,
     });
 
-    if (!paciente || paciente.rol !== 'Paciente') {
+    if (!paciente || paciente.rol !== RolUsuario.PACIENTE) {
       throw new BadRequestException(
         'El usuario no es un paciente',
       );
@@ -684,10 +655,6 @@ export class ReservasService {
     };
   }
 
-  // =====================================================
-  // CANCELAR RESERVA (PACIENTE)
-  // =====================================================
-
   async cancelar(
     idReserva: number,
     idPaciente: number,
@@ -739,10 +706,6 @@ export class ReservasService {
       },
     };
   }
-
-  // =====================================================
-  // CANCELAR RESERVA (ADMINISTRADOR)
-  // =====================================================
 
   async cancelarAdmin(idReserva: number) {
     const reserva = await this.reservaRepository.findOneBy({

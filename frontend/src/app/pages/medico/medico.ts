@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth';
 import {
   Reserva,
   ReservasService,
+  EstadoReservaMedico,
   EstadoSolicitadoCorreccion,
 } from '../../services/reservas';
 
@@ -20,7 +21,7 @@ type PestanaReservas =
 
 interface ModalConfirmacionMedico {
   reserva: Reserva;
-  estado: 'Atendido' | 'Ausente';
+  estado: EstadoReservaMedico;
   titulo: string;
   mensaje: string;
   textoConfirmar: string;
@@ -55,7 +56,7 @@ export class Medico implements OnInit {
 
   // Solicitudes de corrección.
   reservaEnCorreccion = signal<number | null>(null);
-  estadoSolicitado: EstadoSolicitadoCorreccion = 'Atendido';
+  estadoSolicitado: EstadoSolicitadoCorreccion = 'ATENDIDO';
   motivoCorreccion = '';
   enviandoCorreccion = signal(false);
 
@@ -155,7 +156,7 @@ export class Medico implements OnInit {
   // Abre el modal personalizado de confirmación.
   cambiarEstado(
     reserva: Reserva,
-    estado: 'Atendido' | 'Ausente',
+    estado: EstadoReservaMedico,
   ): void {
     if (
       reserva.estado.trim().toLowerCase() !== 'activo' ||
@@ -165,7 +166,7 @@ export class Medico implements OnInit {
       return;
     }
 
-    const esAtendido = estado === 'Atendido';
+    const esAtendido = estado === 'ATENDIDO';
 
     this.modalConfirmacion.set({
       reserva,
@@ -237,7 +238,7 @@ export class Medico implements OnInit {
           this.cargarTurnos();
 
           this.mensaje.set(
-            modal.estado === 'Atendido'
+            modal.estado === 'ATENDIDO'
               ? 'El turno se marcó como atendido.'
               : 'El turno se marcó como ausente.',
           );
@@ -277,8 +278,8 @@ export class Medico implements OnInit {
 
     this.estadoSolicitado =
       estado === 'atendido'
-        ? 'Ausente'
-        : 'Atendido';
+        ? 'AUSENTE'
+        : 'ATENDIDO';
 
     this.motivoCorreccion = '';
     this.error.set('');
@@ -333,8 +334,7 @@ export class Medico implements OnInit {
     }
 
     if (
-      this.estadoSolicitado.toLowerCase() ===
-      estadoActual
+      this.estadoSolicitado.toLowerCase() === estadoActual
     ) {
       this.error.set(
         'El estado solicitado debe ser diferente del estado actual.',

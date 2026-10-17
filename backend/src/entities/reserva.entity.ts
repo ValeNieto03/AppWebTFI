@@ -1,10 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum EstadoReserva {
-  ACTIVO = 'Activo',
-  ATENDIDO = 'Atendido',
-  AUSENTE = 'Ausente',
-  CANCELADO = 'Cancelado',
+  ACTIVO = 'ACTIVO',
+  ATENDIDO = 'ATENDIDO',
+  AUSENTE = 'AUSENTE',
+  CANCELADO = 'CANCELADO',
 }
 
 @Entity('reservas')

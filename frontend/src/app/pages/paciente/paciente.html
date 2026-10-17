@@ -1,13 +1,10 @@
 <div class="patient-page">
-
     <header class="patient-header">
         <div class="header-content">
             <div>
                 <p class="eyebrow">Portal del paciente</p>
                 <h1>Mis turnos</h1>
-                <p class="subtitle">
-                    Consultá y gestioná tus turnos médicos.
-                </p>
+                <p class="subtitle">Consultá y gestioná tus turnos médicos.</p>
             </div>
 
             <button class="logout-button" type="button" (click)="cerrarSesion()">
@@ -17,13 +14,12 @@
     </header>
 
     <main class="patient-content">
-
         <section class="welcome-section">
             <div>
                 <h2>Tu atención médica</h2>
                 <p>
-                    Desde acá podés reservar nuevas consultas,
-                    consultar tus reservas y conocer el estado de cada turno.
+                    Desde acá podés reservar nuevas consultas, consultar tus reservas
+                    y conocer el estado de cada turno.
                 </p>
             </div>
 
@@ -36,25 +32,19 @@
             <article class="summary-card">
                 <span class="summary-label">Total de turnos</span>
                 <strong>{{ reservas().length }}</strong>
-                <span class="summary-description">
-                    Reservas registradas
-                </span>
+                <span class="summary-description">Reservas registradas</span>
             </article>
 
             <article class="summary-card">
                 <span class="summary-label">Activos</span>
-                <strong>{{ contarPorEstado('Activo') }}</strong>
-                <span class="summary-description">
-                    Turnos pendientes de atención
-                </span>
+                <strong>{{ contarPorEstado('ACTIVO') }}</strong>
+                <span class="summary-description">Turnos pendientes de atención</span>
             </article>
 
             <article class="summary-card">
                 <span class="summary-label">Atendidos</span>
-                <strong>{{ contarPorEstado('Atendido') }}</strong>
-                <span class="summary-description">
-                    Consultas realizadas
-                </span>
+                <strong>{{ contarPorEstado('ATENDIDO') }}</strong>
+                <span class="summary-description">Consultas realizadas</span>
             </article>
         </section>
 
@@ -69,8 +59,7 @@
 
             <div class="booking-card">
                 <p class="booking-description">
-                    Elegí un médico, una fecha y un horario para reservar
-                    tu consulta.
+                    Elegí un médico, una fecha y un horario para reservar tu consulta.
                 </p>
 
                 @if (cargandoMedicos()) {
@@ -92,21 +81,16 @@
                 </div>
                 } @else {
                 <form class="booking-form" (submit)="$event.preventDefault(); crearReserva()">
-
                     <div class="form-field">
                         <label for="medico">Médico</label>
 
                         <select id="medico" name="medico" [value]="medicoSeleccionado()"
                             (change)="medicoSeleccionado.set($any($event.target).value)" required>
-
-                            <option value="" disabled>
-                                Seleccioná un médico
-                            </option>
+                            <option value="" disabled>Seleccioná un médico</option>
 
                             @for (medico of medicos(); track medico.id) {
                             <option [value]="medico.id">
-                                {{ medico.nombre }} — Matrícula:
-                                {{ medico.matricula }}
+                                {{ medico.nombre }} — Matrícula: {{ medico.matricula }}
                             </option>
                             }
                         </select>
@@ -115,7 +99,10 @@
                         <span class="detail-secondary">
                             Valor de la consulta:
                             <strong class="price">
-                                {{ medico.valor_consulta | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+                                {{
+                                medico.valor_consulta
+                                | currency:'ARS':'symbol':'1.2-2':'es-AR'
+                                }}
                             </strong>
                         </span>
                         }
@@ -126,11 +113,9 @@
 
                         <input id="fecha" name="fecha" type="date" [min]="fechaMinima" [max]="fechaMaxima"
                             [value]="fechaSeleccionada()" (change)="fechaSeleccionada.set($any($event.target).value)"
-                            required>
+                            required />
 
-                        <small>
-                            Podés reservar desde hoy hasta dentro de 30 días.
-                        </small>
+                        <small>Podés reservar desde hoy hasta dentro de 30 días.</small>
                     </div>
 
                     <div class="form-field">
@@ -138,21 +123,14 @@
 
                         <select id="hora" name="hora" [value]="horaSeleccionada()"
                             (change)="horaSeleccionada.set($any($event.target).value)" required>
-
-                            <option value="" disabled>
-                                Seleccioná un horario
-                            </option>
+                            <option value="" disabled>Seleccioná un horario</option>
 
                             @for (hora of horariosDisponibles; track hora) {
-                            <option [value]="hora">
-                                {{ hora }}
-                            </option>
+                            <option [value]="hora">{{ hora }}</option>
                             }
                         </select>
 
-                        <small>
-                            Los horarios están sujetos a disponibilidad.
-                        </small>
+                        <small>Los horarios están sujetos a disponibilidad.</small>
                     </div>
 
                     @if (errorFormulario()) {
@@ -169,9 +147,7 @@
 
                     <div class="booking-actions">
                         <button class="booking-button" type="submit" [disabled]="creandoReserva()">
-                            {{ creandoReserva()
-                            ? 'Reservando...'
-                            : 'Confirmar reserva' }}
+                            {{ creandoReserva() ? 'Reservando...' : 'Confirmar reserva' }}
                         </button>
                     </div>
                 </form>
@@ -185,8 +161,50 @@
                 <div>
                     <p class="eyebrow">AGENDA PERSONAL</p>
                     <h2>Mis reservas</h2>
+                    <p class="section-description">
+                        Organizá tus turnos por fecha o consultalos según su estado.
+                    </p>
                 </div>
             </div>
+
+            <!-- Ordenamiento y filtros -->
+            <div class="filter-panel">
+                <div class="filter-field">
+                    <label for="ordenFechaPaciente">Ordenar por fecha</label>
+
+                    <select id="ordenFechaPaciente" [value]="ordenFecha()"
+                        (change)="ordenFecha.set($any($event.target).value)">
+                        <option value="recientes">Más recientes primero</option>
+                        <option value="antiguas">Más antiguas primero</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="estadoFiltroPaciente">Filtrar por estado</label>
+
+                    <select id="estadoFiltroPaciente" [value]="estadoFiltro()"
+                        (change)="estadoFiltro.set($any($event.target).value)">
+                        <option value="todos">Todos los estados</option>
+                        <option value="activo">Activos</option>
+                        <option value="atendido">Atendidos</option>
+                        <option value="ausente">Ausentes</option>
+                        <option value="cancelado">Cancelados</option>
+                    </select>
+                </div>
+
+                <button class="refresh-button clear-filters-button" type="button" (click)="limpiarFiltros()" [disabled]="
+            ordenFecha() === 'recientes' && estadoFiltro() === 'todos'
+          ">
+                    Limpiar filtros
+                </button>
+            </div>
+
+            @if (!cargando() && !error() && reservas().length > 0) {
+            <p class="results-count">
+                Mostrando <strong>{{ reservasFiltradas().length }}</strong>
+                de <strong>{{ reservas().length }}</strong> turnos
+            </p>
+            }
 
             @if (cargando()) {
             <div class="feedback-card">
@@ -212,28 +230,42 @@
                 <div class="empty-icon">+</div>
                 <h3>Todavía no tenés turnos</h3>
                 <p>
-                    Cuando reserves una consulta, aparecerá acá
-                    con su fecha, horario y estado.
+                    Cuando reserves una consulta, aparecerá acá con su fecha,
+                    horario y estado.
                 </p>
             </div>
             }
 
-            @if (!cargando() && !error() && reservas().length > 0) {
-            <div class="reservations-list">
-                @for (reserva of reservas(); track reserva.id) {
-                <article class="reservation-card">
+            @if (
+            !cargando() &&
+            !error() &&
+            reservas().length > 0 &&
+            reservasFiltradas().length === 0
+            ) {
+            <div class="feedback-card">
+                <div class="empty-icon">⌕</div>
+                <h3>No hay turnos para mostrar</h3>
+                <p>
+                    No encontramos reservas que coincidan con el estado seleccionado.
+                    Probá cambiar los filtros.
+                </p>
 
+                <button class="refresh-button" type="button" (click)="limpiarFiltros()">
+                    Mostrar todos los turnos
+                </button>
+            </div>
+            }
+
+            @if (!cargando() && !error() && reservasFiltradas().length > 0) {
+            <div class="reservations-list">
+                @for (reserva of reservasFiltradas(); track reserva.id) {
+                <article class="reservation-card">
                     <div class="reservation-date">
                         <span class="date-icon">▦</span>
 
                         <div>
-                            <span class="field-label">
-                                Fecha y hora
-                            </span>
-
-                            <strong>
-                                {{ formatearFecha(reserva.fecha_hora) }}
-                            </strong>
+                            <span class="field-label">Fecha y hora</span>
+                            <strong>{{ formatearFecha(reserva.fecha_hora) }}</strong>
                         </div>
                     </div>
 
@@ -255,12 +287,13 @@
                         </div>
 
                         <div class="detail-item">
-                            <span class="field-label">
-                                Valor de la consulta
-                            </span>
+                            <span class="field-label">Valor de la consulta</span>
 
                             <strong class="price">
-                                {{ reserva.valor_consulta | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+                                {{
+                                reserva.valor_consulta
+                                | currency:'ARS':'symbol':'1.2-2':'es-AR'
+                                }}
                             </strong>
 
                             <span class="detail-secondary">
@@ -288,16 +321,14 @@
                         </button>
                     </div>
                     }
-
                 </article>
                 }
             </div>
             }
         </section>
-
     </main>
 
-
+    <!-- Modal reutilizable -->
     @if (modal(); as ventana) {
     <div class="modal-overlay" (click)="cerrarModal()" (keydown.escape)="cerrarModal()">
         <section class="patient-modal" [class.modal-confirmation]="ventana.tipo === 'confirmacion'"
@@ -314,7 +345,6 @@
             </div>
 
             <h2 id="modalTitulo">{{ ventana.titulo }}</h2>
-
             <p class="modal-message">{{ ventana.mensaje }}</p>
 
             <div class="modal-actions">
@@ -324,13 +354,18 @@
                     No, volver
                 </button>
 
-                <button type="button" class="modal-button"
-                    [class.modal-button-danger]="ventana.accion === 'cerrarSesion' || ventana.accion === 'cancelarTurno'"
-                    [class.modal-button-primary]="ventana.accion !== 'cerrarSesion' && ventana.accion !== 'cancelarTurno'"
-                    [disabled]="procesandoModal()" (click)="confirmarModal()">
-                    {{ procesandoModal()
+                <button type="button" class="modal-button" [class.modal-button-danger]="
+                ventana.accion === 'cerrarSesion' ||
+                ventana.accion === 'cancelarTurno'
+              " [class.modal-button-primary]="
+                ventana.accion !== 'cerrarSesion' &&
+                ventana.accion !== 'cancelarTurno'
+              " [disabled]="procesandoModal()" (click)="confirmarModal()">
+                    {{
+                    procesandoModal()
                     ? 'Procesando...'
-                    : (ventana.textoConfirmar || 'Confirmar') }}
+                    : (ventana.textoConfirmar || 'Confirmar')
+                    }}
                 </button>
                 } @else {
                 <button type="button" class="modal-button modal-button-primary" (click)="cerrarModal()">
@@ -341,6 +376,4 @@
         </section>
     </div>
     }
-
-
 </div>

@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import {
     Usuario,
     RolUsuario,
+    EstadoUsuario,
 } from '../entities/usuario.entity.js';
 
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
@@ -88,7 +89,7 @@ export class UsuariosService {
             };
         }
 
-        if (usuario.estado !== 'activo') {
+        if (usuario.estado !== EstadoUsuario.ACTIVO) {
             return {
                 mensaje: 'El usuario no está activo',
             };

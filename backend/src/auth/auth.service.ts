@@ -34,7 +34,7 @@ export class AuthService {
       );
     }
 
-    if (usuario.estado !== 'activo') {
+    if (usuario.estado !== 'ACTIVO') {
       throw new UnauthorizedException(
         'El usuario no está activo',
       );

@@ -26,8 +26,15 @@ import {
 registerLocaleData(localeEsAr);
 
 type TipoModal = 'confirmacion' | 'exito' | 'error';
-
 type AccionModal = 'cerrarSesion' | 'cancelarTurno' | null;
+
+type OrdenFecha = 'recientes' | 'antiguas';
+type FiltroEstado =
+  | 'todos'
+  | 'activo'
+  | 'atendido'
+  | 'ausente'
+  | 'cancelado';
 
 interface ModalPaciente {
   tipo: TipoModal;
@@ -64,6 +71,10 @@ export class Paciente implements OnInit {
   creandoReserva = signal(false);
   mensajeFormulario = signal('');
   errorFormulario = signal('');
+
+  // Ordenamiento y filtro de las reservas.
+  ordenFecha = signal<OrdenFecha>('recientes');
+  estadoFiltro = signal<FiltroEstado>('todos');
 
   // Ventana emergente reutilizable.
   modal = signal<ModalPaciente | null>(null);
@@ -180,6 +191,72 @@ export class Paciente implements OnInit {
     });
   }
 
+  // Devuelve una copia ordenada y filtrada.
+  // No modifica las reservas originales ni la base de datos.
+  reservasFiltradas(): Reserva[] {
+    const estado = this.estadoFiltro();
+    const orden = this.ordenFecha();
+
+    return [...this.reservas()]
+      .filter((reserva) => {
+        if (estado === 'todos') {
+          return true;
+        }
+
+        return this.normalizarEstado(reserva.estado) === estado;
+      })
+      .sort((a, b) => {
+        const fechaA = new Date(a.fecha_hora).getTime();
+        const fechaB = new Date(b.fecha_hora).getTime();
+
+        const invalidaA = Number.isNaN(fechaA);
+        const invalidaB = Number.isNaN(fechaB);
+
+        if (invalidaA && invalidaB) return 0;
+        if (invalidaA) return 1;
+        if (invalidaB) return -1;
+
+        return orden === 'recientes'
+          ? fechaB - fechaA
+          : fechaA - fechaB;
+      });
+  }
+
+  // Restablece el orden y el filtro.
+  limpiarFiltros(): void {
+    this.ordenFecha.set('recientes');
+    this.estadoFiltro.set('todos');
+  }
+
+  contarPorEstado(estadoBuscado: string): number {
+    return this.reservas().filter(
+      (reserva) =>
+        this.normalizarEstado(reserva.estado) ===
+        this.normalizarEstado(estadoBuscado),
+    ).length;
+  }
+
+  normalizarEstado(estado: string): string {
+    return (estado ?? '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  formatearFecha(fecha: string): string {
+    const fechaConsulta = new Date(fecha);
+
+    if (Number.isNaN(fechaConsulta.getTime())) {
+      return 'Fecha no disponible';
+    }
+
+    return new Intl.DateTimeFormat('es-AR', {
+      dateStyle: 'long',
+      timeStyle: 'short',
+    }).format(fechaConsulta);
+  }
+
   crearReserva(): void {
     this.errorFormulario.set('');
     this.mensajeFormulario.set('');
@@ -268,36 +345,6 @@ export class Paciente implements OnInit {
     });
   }
 
-  contarPorEstado(estadoBuscado: string): number {
-    return this.reservas().filter(
-      (reserva) =>
-        this.normalizarEstado(reserva.estado) ===
-        this.normalizarEstado(estadoBuscado),
-    ).length;
-  }
-
-  normalizarEstado(estado: string): string {
-    return (estado ?? '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-  }
-
-  formatearFecha(fecha: string): string {
-    const fechaConsulta = new Date(fecha);
-
-    if (Number.isNaN(fechaConsulta.getTime())) {
-      return 'Fecha no disponible';
-    }
-
-    return new Intl.DateTimeFormat('es-AR', {
-      dateStyle: 'long',
-      timeStyle: 'short',
-    }).format(fechaConsulta);
-  }
-
-  // Abre la ventana para confirmar la cancelación.
   cancelarTurno(reserva: Reserva): void {
     this.abrirModal({
       tipo: 'confirmacion',
@@ -310,7 +357,6 @@ export class Paciente implements OnInit {
     });
   }
 
-  // Abre la ventana para confirmar el cierre de sesión.
   cerrarSesion(): void {
     this.abrirModal({
       tipo: 'confirmacion',
@@ -333,7 +379,6 @@ export class Paciente implements OnInit {
     this.modal.set(null);
   }
 
-  // Ejecuta la acción únicamente si el usuario confirma.
   confirmarModal(): void {
     const modalActual = this.modal();
 
@@ -384,7 +429,7 @@ export class Paciente implements OnInit {
           const mensajeBackend = err.error?.message;
 
           mensajeError =
-            (typeof mensajeBackend === 'string' && mensajeBackend.trim())
+            typeof mensajeBackend === 'string' && mensajeBackend.trim()
               ? mensajeBackend
               : 'No se puede cancelar este turno. Recordá que solo podés hacerlo hasta el día anterior a la consulta.';
         } else {

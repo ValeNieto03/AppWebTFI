@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -122,7 +121,6 @@ export class Admin implements OnInit, OnDestroy {
     errorSolicitudes = signal('');
     mensajeSolicitudes = signal('');
 
-    // Modal personalizado para confirmaciones.
     modalAdmin = signal<ModalAdmin | null>(null);
     procesandoAccionModal = signal(false);
 
@@ -142,8 +140,8 @@ export class Admin implements OnInit, OnDestroy {
         nombres: '',
         email: '',
         clave: '',
-        estado: 'activo',
-        rol: 'Paciente',
+        estado: 'ACTIVO',
+        rol: 'PACIENTE',
         matricula: '',
         valor_consulta: '',
     };
@@ -153,7 +151,7 @@ export class Admin implements OnInit, OnDestroy {
         nombres: '',
         apellidos: '',
         email: '',
-        estado: 'activo',
+        estado: 'ACTIVO',
     };
 
     solicitudesFiltradas = computed(() => {
@@ -287,7 +285,6 @@ export class Admin implements OnInit, OnDestroy {
         }, 3000);
     }
 
-    // Abre el modal con el texto y la acción que corresponden.
     private abrirConfirmacion(
         titulo: string,
         mensaje: string,
@@ -303,7 +300,6 @@ export class Admin implements OnInit, OnDestroy {
         });
     }
 
-    // Cierra el modal, excepto mientras se procesa una acción.
     cerrarModalAdmin(): void {
         if (this.procesandoAccionModal()) {
             return;
@@ -312,7 +308,6 @@ export class Admin implements OnInit, OnDestroy {
         this.modalAdmin.set(null);
     }
 
-    // Indica si el modal representa una acción peligrosa.
     modalEsPeligroso(modal: ModalAdmin): boolean {
         const accion = modal.accion;
 
@@ -321,13 +316,12 @@ export class Admin implements OnInit, OnDestroy {
         }
 
         if (accion.tipo === 'cambiarEstadoUsuario') {
-            return accion.nuevoEstado === 'baja';
+            return accion.nuevoEstado === 'BAJA';
         }
 
         return accion.estado === 'Rechazada';
     }
 
-    // Confirma la acción elegida en el modal.
     confirmarAccionModal(): void {
         const modal = this.modalAdmin();
 
@@ -469,7 +463,7 @@ export class Admin implements OnInit, OnDestroy {
             nombres: usuario.nombres ?? '',
             apellidos: usuario.apellidos ?? '',
             email: usuario.email ?? '',
-            estado: usuario.estado ?? 'activo',
+            estado: usuario.estado ?? 'ACTIVO',
         };
 
         this.errorEdicion.set('');
@@ -514,7 +508,7 @@ export class Admin implements OnInit, OnDestroy {
             return;
         }
 
-        if (estado !== 'activo' && estado !== 'baja') {
+        if (estado !== 'ACTIVO' && estado !== 'BAJA') {
             this.errorEdicion.set('Seleccioná un estado válido.');
             return;
         }
@@ -563,11 +557,11 @@ export class Admin implements OnInit, OnDestroy {
 
     cambiarEstadoUsuario(usuario: UsuarioApi): void {
         const nuevoEstado =
-            usuario.estado?.toLowerCase() === 'activo'
-                ? 'baja'
-                : 'activo';
+            usuario.estado?.toUpperCase() === 'ACTIVO'
+                ? 'BAJA'
+                : 'ACTIVO';
 
-        const accion = nuevoEstado === 'baja'
+        const accion = nuevoEstado === 'BAJA'
             ? 'dar de baja'
             : 'activar';
 
@@ -575,11 +569,11 @@ export class Admin implements OnInit, OnDestroy {
             `${usuario.nombres} ${usuario.apellidos}`.trim();
 
         this.abrirConfirmacion(
-            nuevoEstado === 'baja'
+            nuevoEstado === 'BAJA'
                 ? 'Dar de baja usuario'
                 : 'Activar usuario',
             `¿Querés ${accion} al usuario ${nombreCompleto}?`,
-            nuevoEstado === 'baja'
+            nuevoEstado === 'BAJA'
                 ? 'Dar de baja'
                 : 'Activar usuario',
             {
@@ -609,7 +603,7 @@ export class Admin implements OnInit, OnDestroy {
                     this.modalAdmin.set(null);
 
                     this.mostrarMensajeTemporal(
-                        nuevoEstado === 'baja'
+                        nuevoEstado === 'BAJA'
                             ? 'Estado actualizado: usuario dado de baja.'
                             : 'Estado actualizado: usuario activado.',
                     );
@@ -667,8 +661,6 @@ export class Admin implements OnInit, OnDestroy {
             return;
         }
 
-        // Los datos profesionales son opcionales para los médicos.
-        // Se pueden dejar ambos vacíos, pero no completar solo uno.
         const matriculaIngresada =
             String(this.nuevoUsuario.matricula).trim() !== '';
 
@@ -676,7 +668,7 @@ export class Admin implements OnInit, OnDestroy {
             String(this.nuevoUsuario.valor_consulta).trim() !== '';
 
         if (
-            rol === 'Medico' &&
+            rol === 'MEDICO' &&
             (matriculaIngresada || valorIngresado)
         ) {
             if (!matriculaIngresada || !valorIngresado) {
@@ -722,20 +714,18 @@ export class Admin implements OnInit, OnDestroy {
             )
             .subscribe({
                 next: (usuarioCreado) => {
-                    if (rol === 'Medico') {
+                    if (rol === 'MEDICO') {
                         const matriculaIngresada =
                             String(this.nuevoUsuario.matricula).trim() !== '';
 
                         const valorIngresado =
                             String(this.nuevoUsuario.valor_consulta).trim() !== '';
 
-                        // Si ambos campos tienen datos, se crea la ficha profesional.
                         if (matriculaIngresada && valorIngresado) {
                             this.crearFichaMedico(usuarioCreado);
                             return;
                         }
 
-                        // Si ambos están vacíos, se crea solamente la cuenta.
                         this.creandoUsuario.set(false);
 
                         this.mostrarMensajeTemporal(
@@ -757,7 +747,7 @@ export class Admin implements OnInit, OnDestroy {
                     this.limpiarFormularioUsuario();
                     this.cargarUsuarios();
 
-                    if (rol === 'Paciente') {
+                    if (rol === 'PACIENTE') {
                         this.cargarPacientes();
                     }
                 },
@@ -827,8 +817,8 @@ export class Admin implements OnInit, OnDestroy {
             nombres: '',
             email: '',
             clave: '',
-            estado: 'activo',
-            rol: 'Paciente',
+            estado: 'ACTIVO',
+            rol: 'PACIENTE',
             matricula: '',
             valor_consulta: '',
         };
