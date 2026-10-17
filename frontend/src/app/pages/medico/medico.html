@@ -38,7 +38,7 @@
                 <span class="summary-icon">✓</span>
                 <div>
                     <p class="summary-label">Atendidas</p>
-                    <p class="summary-number">{{ contarPorEstado('Atendido') }}</p>
+                    <p class="summary-number">{{ contarPorEstado('ATENDIDO') }}</p>
                 </div>
             </article>
         </section>
@@ -128,13 +128,13 @@
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'atendido'"
                     [attr.aria-pressed]="pestanaActiva() === 'atendido'" (click)="pestanaActiva.set('atendido')">
                     Atendidas
-                    <span class="tab-count">{{ contarPorEstado('Atendido') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('ATENDIDO') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'ausente'"
                     [attr.aria-pressed]="pestanaActiva() === 'ausente'" (click)="pestanaActiva.set('ausente')">
                     Ausentes
-                    <span class="tab-count">{{ contarPorEstado('Ausente') }}</span>
+                    <span class="tab-count">{{ contarPorEstado('AUSENTE') }}</span>
                 </button>
 
                 <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'cancelado'"
@@ -217,12 +217,12 @@
                         <!-- Acciones disponibles únicamente para reservas activas -->
                         <div class="action-buttons" *ngIf="reserva.estado.toLowerCase() === 'activo'">
                             <button type="button" class="attended-button" [disabled]="actualizandoId() === reserva.id"
-                                (click)="cambiarEstado(reserva, 'Atendido')">
+                                (click)="cambiarEstado(reserva, 'ATENDIDO')">
                                 Marcar atendido
                             </button>
 
                             <button type="button" class="absent-button" [disabled]="actualizandoId() === reserva.id"
-                                (click)="cambiarEstado(reserva, 'Ausente')">
+                                (click)="cambiarEstado(reserva, 'AUSENTE')">
                                 Marcar ausente
                             </button>
                         </div>
@@ -251,8 +251,8 @@
 
                             <select [id]="'estado-' + reserva.id" [(ngModel)]="estadoSolicitado"
                                 [disabled]="enviandoCorreccion()">
-                                <option value="Atendido">Atendido</option>
-                                <option value="Ausente">Ausente</option>
+                                <option value="ATENDIDO">Atendido</option>
+                                <option value="AUSENTE">Ausente</option>
                             </select>
 
                             <label [for]="'motivo-' + reserva.id">
@@ -302,9 +302,9 @@
             ✕
         </button>
 
-        <div class="confirmation-icon" [class.confirmation-icon-danger]="modal.estado === 'Ausente'">
-            <span *ngIf="modal.estado === 'Atendido'">✓</span>
-            <span *ngIf="modal.estado === 'Ausente'">!</span>
+        <div class="confirmation-icon" [class.confirmation-icon-danger]="modal.estado === 'AUSENTE'">
+            <span *ngIf="modal.estado === 'ATENDIDO'">✓</span>
+            <span *ngIf="modal.estado === 'AUSENTE'">!</span>
         </div>
 
         <div class="confirmation-content">
@@ -334,7 +334,7 @@
             </button>
 
             <button type="button" class="confirmation-submit"
-                [class.confirmation-submit-danger]="modal.estado === 'Ausente'" [disabled]="procesandoConfirmacion()"
+                [class.confirmation-submit-danger]="modal.estado === 'AUSENTE'" [disabled]="procesandoConfirmacion()"
                 (click)="confirmarCambioEstado()">
                 {{
                 procesandoConfirmacion()

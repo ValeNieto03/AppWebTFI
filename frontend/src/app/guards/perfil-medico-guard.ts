@@ -25,13 +25,13 @@ export const perfilMedicoGuard: CanActivateFn = (route) => {
   const estaEnCompletarPerfil =
     route.routeConfig?.path === 'completar-perfil';
 
-  if (usuario.rol !== 'Medico') {
+  if (usuario.rol !== 'MEDICO') {
     if (estaEnCompletarPerfil) {
-      if (usuario.rol === 'Administrador') {
+      if (usuario.rol === 'ADMINISTRADOR') {
         return router.createUrlTree(['/admin']);
       }
 
-      if (usuario.rol === 'Paciente') {
+      if (usuario.rol === 'PACIENTE') {
         return router.createUrlTree(['/paciente']);
       }
 

@@ -142,8 +142,8 @@ export class Admin implements OnInit, OnDestroy {
         nombres: '',
         email: '',
         clave: '',
-        estado: 'activo',
-        rol: 'Paciente',
+        estado: 'ACTIVO',
+        rol: 'PACIENTE',
         matricula: '',
         valor_consulta: '',
     };
@@ -153,7 +153,7 @@ export class Admin implements OnInit, OnDestroy {
         nombres: '',
         apellidos: '',
         email: '',
-        estado: 'activo',
+        estado: 'ACTIVO',
     };
 
     solicitudesFiltradas = computed(() => {
@@ -321,7 +321,7 @@ export class Admin implements OnInit, OnDestroy {
         }
 
         if (accion.tipo === 'cambiarEstadoUsuario') {
-            return accion.nuevoEstado === 'baja';
+            return accion.nuevoEstado === 'BAJA';
         }
 
         return accion.estado === 'Rechazada';
@@ -469,7 +469,7 @@ export class Admin implements OnInit, OnDestroy {
             nombres: usuario.nombres ?? '',
             apellidos: usuario.apellidos ?? '',
             email: usuario.email ?? '',
-            estado: usuario.estado ?? 'activo',
+            estado: usuario.estado ?? 'ACTIVO',
         };
 
         this.errorEdicion.set('');
@@ -514,7 +514,7 @@ export class Admin implements OnInit, OnDestroy {
             return;
         }
 
-        if (estado !== 'activo' && estado !== 'baja') {
+        if (estado !== 'ACTIVO' && estado !== 'BAJA') {
             this.errorEdicion.set('Seleccioná un estado válido.');
             return;
         }
@@ -564,10 +564,10 @@ export class Admin implements OnInit, OnDestroy {
     cambiarEstadoUsuario(usuario: UsuarioApi): void {
         const nuevoEstado =
             usuario.estado?.toLowerCase() === 'activo'
-                ? 'baja'
-                : 'activo';
+                ? 'BAJA'
+                : 'ACTIVO';
 
-        const accion = nuevoEstado === 'baja'
+        const accion = nuevoEstado === 'BAJA'
             ? 'dar de baja'
             : 'activar';
 
@@ -575,11 +575,11 @@ export class Admin implements OnInit, OnDestroy {
             `${usuario.nombres} ${usuario.apellidos}`.trim();
 
         this.abrirConfirmacion(
-            nuevoEstado === 'baja'
+            nuevoEstado === 'BAJA'
                 ? 'Dar de baja usuario'
                 : 'Activar usuario',
             `¿Querés ${accion} al usuario ${nombreCompleto}?`,
-            nuevoEstado === 'baja'
+            nuevoEstado === 'BAJA'
                 ? 'Dar de baja'
                 : 'Activar usuario',
             {
@@ -609,7 +609,7 @@ export class Admin implements OnInit, OnDestroy {
                     this.modalAdmin.set(null);
 
                     this.mostrarMensajeTemporal(
-                        nuevoEstado === 'baja'
+                        nuevoEstado === 'BAJA'
                             ? 'Estado actualizado: usuario dado de baja.'
                             : 'Estado actualizado: usuario activado.',
                     );
@@ -676,7 +676,7 @@ export class Admin implements OnInit, OnDestroy {
             String(this.nuevoUsuario.valor_consulta).trim() !== '';
 
         if (
-            rol === 'Medico' &&
+            rol === 'MEDICO' &&
             (matriculaIngresada || valorIngresado)
         ) {
             if (!matriculaIngresada || !valorIngresado) {
@@ -722,7 +722,7 @@ export class Admin implements OnInit, OnDestroy {
             )
             .subscribe({
                 next: (usuarioCreado) => {
-                    if (rol === 'Medico') {
+                    if (rol === 'MEDICO') {
                         const matriculaIngresada =
                             String(this.nuevoUsuario.matricula).trim() !== '';
 
@@ -757,7 +757,7 @@ export class Admin implements OnInit, OnDestroy {
                     this.limpiarFormularioUsuario();
                     this.cargarUsuarios();
 
-                    if (rol === 'Paciente') {
+                    if (rol === 'PACIENTE') {
                         this.cargarPacientes();
                     }
                 },
@@ -827,8 +827,8 @@ export class Admin implements OnInit, OnDestroy {
             nombres: '',
             email: '',
             clave: '',
-            estado: 'activo',
-            rol: 'Paciente',
+            estado: 'ACTIVO',
+            rol: 'PACIENTE',
             matricula: '',
             valor_consulta: '',
         };

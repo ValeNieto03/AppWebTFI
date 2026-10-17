@@ -58,7 +58,7 @@ export interface CrearReservaDatos {
     fecha_hora: string;
 }
 
-export type EstadoSolicitadoCorreccion = 'Atendido' | 'Ausente';
+export type EstadoSolicitadoCorreccion = 'ATENDIDO' | 'AUSENTE';
 
 export interface SolicitudCorreccionReserva {
     id: number;
@@ -163,7 +163,7 @@ export class ReservasService {
 
     cambiarEstadoTurno(
         id: number,
-        estado: 'Atendido' | 'Ausente',
+        estado: 'ATENDIDO' | 'AUSENTE',
     ): Observable<CambiarEstadoReservaRespuesta> {
         return this.http.patch<CambiarEstadoReservaRespuesta>(
             `${this.apiUrl}/${id}/estado`,

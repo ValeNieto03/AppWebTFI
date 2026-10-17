@@ -46,17 +46,17 @@ export class Login {
           respuesta.mensaje === 'Login correcto' &&
           respuesta.usuario
         ) {
-          if (respuesta.usuario.rol === 'Administrador') {
+          if (respuesta.usuario.rol === 'ADMINISTRADOR') {
             this.router.navigate(['/admin']);
             return;
           }
 
-          if (respuesta.usuario.rol === 'Paciente') {
+          if (respuesta.usuario.rol === 'PACIENTE') {
             this.router.navigate(['/paciente']);
             return;
           }
 
-          if (respuesta.usuario.rol === 'Medico') {
+          if (respuesta.usuario.rol === 'MEDICO') {
             this.router.navigate(['/medico']);
             return;
           }
