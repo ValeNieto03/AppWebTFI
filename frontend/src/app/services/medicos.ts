@@ -12,7 +12,7 @@ export interface PerfilMedico {
   providedIn: 'root',
 })
 export class Medicos {
-  private readonly apiUrl = 'http://localhost:3000/api/v1/medicos';
+  private readonly apiUrl = '/api/v1/medicos';
 
   constructor(private readonly http: HttpClient) {}
 

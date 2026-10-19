@@ -89,7 +89,7 @@ interface ModalAdmin {
     styleUrl: './admin.css',
 })
 export class Admin implements OnInit, OnDestroy {
-    private readonly apiBase = 'http://localhost:3000/api/v1';
+    private readonly apiBase = '/api/v1';
     private readonly apiReservas = `${this.apiBase}/reservas`;
 
     private mensajeTimeout: ReturnType<typeof setTimeout> | null = null;

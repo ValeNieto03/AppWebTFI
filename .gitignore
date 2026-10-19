@@ -75,3 +75,6 @@ lerna-debug.log*
 
 .DS_Store
 Thumbs.db
+# Compodoc
+backend/documentation/
+frontend/documentation/

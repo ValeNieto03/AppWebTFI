@@ -23,7 +23,7 @@ export interface LoginRespuesta {
 })
 export class AuthService {
     private readonly apiUrl =
-        'http://localhost:3000/api/v1/auth';
+        '/api/v1/auth';
 
     private temporizadorExpiracion:
         ReturnType<typeof setTimeout> | undefined;

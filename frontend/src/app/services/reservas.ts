@@ -90,10 +90,10 @@ export interface SolicitarCorreccionRespuesta {
 })
 export class ReservasService {
     private readonly apiUrl =
-        'http://localhost:3000/api/v1/reservas';
+        '/api/v1/reservas';
 
     private readonly medicosUrl =
-        'http://localhost:3000/api/v1/medicos';
+        '/api/v1/medicos';
 
     constructor(
         private readonly http: HttpClient,
