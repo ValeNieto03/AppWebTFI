@@ -40,7 +40,6 @@ export class Medico implements OnInit {
   actualizandoId = signal<number | null>(null);
   error = signal('');
   mensaje = signal('');
-  mostrarImporte = signal(false);
 
   // Filtros y ordenamiento.
   pestanaActiva = signal<PestanaReservas>('activo');
@@ -263,22 +262,6 @@ export class Medico implements OnInit {
         reserva.estado.trim().toLowerCase() ===
         estadoBuscado.trim().toLowerCase(),
     ).length;
-  }
-
-  // Calcula el total de las consultas atendidas.
-  calcularImporteAtendido(): number {
-    return this.reservas()
-      .filter(
-        (reserva) =>
-          reserva.estado.trim().toLowerCase() ===
-          'atendido',
-      )
-      .reduce(
-        (total, reserva) =>
-          total +
-          Number(reserva.valor_consulta || 0),
-        0,
-      );
   }
 
   // Formatea la fecha y hora del turno.

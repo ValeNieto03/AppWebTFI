@@ -119,73 +119,6 @@
     font-weight: 750;
 }
 
-/* Importe independiente */
-
-.importe-card {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 12px;
-    padding: 18px 20px;
-    background: #fff;
-    border: 1px solid #dbeafe;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.06);
-}
-
-.importe-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: #eaf3ff;
-    color: #1d4ed8;
-    font-size: 26px;
-    font-weight: 700;
-}
-
-.importe-card-content {
-    min-width: 0;
-}
-
-.importe-card h2 {
-    margin: 0;
-    color: #334155;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.importe-valor {
-    margin: 5px 0;
-    color: #1d4ed8;
-    font-size: 27px;
-    font-weight: 750;
-    overflow-wrap: anywhere;
-}
-
-.importe-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 0;
-    border: none;
-    background: transparent;
-    color: #475569;
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.importe-toggle:hover {
-    color: #1d4ed8;
-    text-decoration: underline;
-}
-
-/* Agenda de turnos */
-
 .appointments-section {
     margin-top: 20px;
     padding: 22px;
@@ -567,14 +500,6 @@ textarea:focus-visible {
 
     .summary-number {
         font-size: 21px;
-    }
-
-    .importe-card {
-        padding: 15px;
-    }
-
-    .importe-valor {
-        font-size: 24px;
     }
 
     .appointments-section {

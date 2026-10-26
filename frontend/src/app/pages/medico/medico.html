@@ -42,31 +42,6 @@
             </article>
         </section>
 
-        <section class="importe-card">
-            <div class="importe-icon" aria-hidden="true">$</div>
-
-            <div class="importe-card-content">
-                <h2>Importe de consultas atendidas</h2>
-
-                <p class="importe-valor">
-                    {{
-                    mostrarImporte()
-                    ? (calcularImporteAtendido() | currency:'ARS':'symbol':'1.0-0':'es-AR')
-                    : '$ ****'
-                    }}
-                </p>
-
-                <button type="button" class="importe-toggle" (click)="mostrarImporte.update(valor => !valor)"
-                    [attr.aria-label]="mostrarImporte() ? 'Ocultar importe' : 'Mostrar importe'"
-                    [attr.aria-pressed]="mostrarImporte()">
-                    <span aria-hidden="true">
-                        {{ mostrarImporte() ? '◉' : '◎' }}
-                    </span>
-                    {{ mostrarImporte() ? 'Ocultar importe' : 'Mostrar importe' }}
-                </button>
-            </div>
-        </section>
-
         <section class="appointments-section">
             <div class="section-heading">
                 <div>
