@@ -64,27 +64,6 @@ export interface CrearReservaDatos {
 
 export type EstadoReservaMedico = 'ATENDIDO' | 'AUSENTE';
 
-export type EstadoSolicitadoCorreccion = EstadoReservaMedico;
-
-export interface SolicitudCorreccionReserva {
-    id: number;
-    id_reserva: number;
-    id_medico: number;
-    estado_actual: string;
-    estado_solicitado: EstadoSolicitadoCorreccion;
-    motivo: string;
-    estado_solicitud: 'Pendiente' | 'Aprobada' | 'Rechazada';
-    id_administrador: number | null;
-    respuesta_admin: string | null;
-    fecha_solicitud: string;
-    fecha_resolucion: string | null;
-}
-
-export interface SolicitarCorreccionRespuesta {
-    mensaje: string;
-    solicitud: SolicitudCorreccionReserva;
-}
-
 @Injectable({
     providedIn: 'root',
 })
@@ -174,22 +153,6 @@ export class ReservasService {
         return this.http.patch<CambiarEstadoReservaRespuesta>(
             `${this.apiUrl}/${id}/estado`,
             { estado },
-            { headers: this.obtenerHeaders() },
-        );
-    }
-
-    solicitarCorreccionTurno(
-        idReserva: number,
-        estadoSolicitado: EstadoSolicitadoCorreccion,
-        motivo: string,
-    ): Observable<SolicitarCorreccionRespuesta> {
-        return this.http.post<SolicitarCorreccionRespuesta>(
-            `${this.apiUrl}/solicitudes-correccion`,
-            {
-                id_reserva: idReserva,
-                estado_solicitado: estadoSolicitado,
-                motivo: motivo.trim(),
-            },
             { headers: this.obtenerHeaders() },
         );
     }

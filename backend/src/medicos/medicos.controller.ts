@@ -2,7 +2,6 @@ import {
     Body,
     Controller,
     Get,
-    Post,
     Patch,
     Param,
     Req,
@@ -12,15 +11,12 @@ import {
 import type { Request } from 'express';
 import {
     ApiBearerAuth,
-    ApiCreatedResponse,
     ApiOkResponse,
 } from '@nestjs/swagger';
 
 import { MedicosService } from './medicos.service.js';
-import { CrearMedicoDto } from './dto/crear-medico.dto.js';
 import { ModificarValorConsultaDto } from './dto/modificar-valor-consulta.dto.js';
 import { MedicoRespuestaDto } from './dto/medico-respuesta.dto.js';
-import { MedicoCreadoRespuestaDto } from './dto/medico-creado-respuesta.dto.js';
 import { ModificarValorConsultaRespuestaDto } from './dto/medico-valor-respuesta.dto.js';
 
 import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard.js';
@@ -61,33 +57,6 @@ export class MedicosController {
         }
 
         return this.medicosService.obtenerPorUsuario(usuario);
-    }
-
-    @Post()
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(RolUsuario.ADMINISTRADOR, RolUsuario.MEDICO)
-    @ApiCreatedResponse({
-        type: MedicoCreadoRespuestaDto,
-    })
-    crearMedico(
-        @Body() crearMedicoDto: CrearMedicoDto,
-        @Req() req: Request,
-    ) {
-        const usuario = req.user as
-            | { id: number; rol: RolUsuario }
-            | undefined;
-
-        if (!usuario) {
-            throw new UnauthorizedException(
-                'Debe iniciar sesión para registrarse como médico.',
-            );
-        }
-
-        return this.medicosService.crear(
-            crearMedicoDto,
-            usuario,
-        );
     }
 
     @Patch(':id/valor')

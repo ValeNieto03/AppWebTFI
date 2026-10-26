@@ -220,59 +220,6 @@
                             </button>
                         </div>
 
-                        <button *ngIf="
-                                reserva.estado.trim().toUpperCase() === 'ATENDIDO' ||
-                                reserva.estado.trim().toUpperCase() === 'AUSENTE'
-                            " type="button" class="correction-button" [disabled]="enviandoCorreccion()"
-                            (click)="abrirFormularioCorreccion(reserva)">
-                            Solicitar corrección
-                        </button>
-
-                        <div class="correction-form" *ngIf="reservaEnCorreccion() === reserva.id">
-                            <h4>Solicitar corrección del turno</h4>
-
-                            <p>
-                                Estado actual:
-                                <strong>{{ reserva.estado }}</strong>
-                            </p>
-
-                            <label [for]="'estado-' + reserva.id">
-                                Estado correcto
-                            </label>
-
-                            <select [id]="'estado-' + reserva.id" [(ngModel)]="estadoSolicitado"
-                                [disabled]="enviandoCorreccion()">
-                                <option value="ATENDIDO">Atendido</option>
-                                <option value="AUSENTE">Ausente</option>
-                            </select>
-
-                            <label [for]="'motivo-' + reserva.id">
-                                Motivo de la corrección
-                            </label>
-
-                            <textarea [id]="'motivo-' + reserva.id" [(ngModel)]="motivoCorreccion" maxlength="1000"
-                                rows="4" placeholder="Explicá por qué es necesario corregir el estado..."
-                                [disabled]="enviandoCorreccion()"></textarea>
-
-                            <small>{{ motivoCorreccion.length }}/1000 caracteres</small>
-
-                            <div class="correction-form-actions">
-                                <button type="button" class="send-correction-button" [disabled]="enviandoCorreccion()"
-                                    (click)="enviarSolicitudCorreccion(reserva)">
-                                    {{
-                                    enviandoCorreccion()
-                                    ? 'Enviando...'
-                                    : 'Enviar solicitud'
-                                    }}
-                                </button>
-
-                                <button type="button" class="cancel-correction-button" [disabled]="enviandoCorreccion()"
-                                    (click)="cerrarFormularioCorreccion()">
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-
                         <p class="updating-message" *ngIf="actualizandoId() === reserva.id">
                             Actualizando estado...
                         </p>

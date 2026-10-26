@@ -259,10 +259,7 @@
 .search-button,
 .secondary-button,
 .attended-button,
-.absent-button,
-.correction-button,
-.send-correction-button,
-.cancel-correction-button {
+.absent-button {
     padding: 9px 12px;
     border: 0;
     border-radius: 8px;
@@ -502,104 +499,6 @@
     font-size: 11px;
 }
 
-/* Solicitud de corrección */
-
-.correction-button {
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
-    color: #3730a3;
-}
-
-.correction-button:hover:not(:disabled) {
-    background: #e0e7ff;
-}
-
-.correction-form {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    width: min(100%, 350px);
-    padding: 15px;
-    border: 1px solid #c7d2fe;
-    border-radius: 10px;
-    background: #f8faff;
-    box-sizing: border-box;
-}
-
-.correction-form h4 {
-    margin: 0;
-    color: #312e81;
-    font-size: 14px;
-}
-
-.correction-form p {
-    margin: 0;
-    color: #475569;
-    font-size: 12px;
-}
-
-.correction-form label {
-    margin-top: 3px;
-    color: #334155;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.correction-form select,
-.correction-form textarea {
-    width: 100%;
-    padding: 9px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
-    background: #fff;
-    color: #1e293b;
-    font: inherit;
-    font-size: 12px;
-    box-sizing: border-box;
-}
-
-.correction-form textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
-.correction-form select:disabled,
-.correction-form textarea:disabled {
-    background: #f1f5f9;
-    cursor: not-allowed;
-}
-
-.correction-form small {
-    color: #64748b;
-    text-align: right;
-    font-size: 11px;
-}
-
-.correction-form-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-top: 4px;
-}
-
-.send-correction-button {
-    background: #3730a3;
-    color: #fff;
-}
-
-.send-correction-button:hover:not(:disabled) {
-    background: #312e81;
-}
-
-.cancel-correction-button {
-    background: #e2e8f0;
-    color: #334155;
-}
-
-.cancel-correction-button:hover:not(:disabled) {
-    background: #cbd5e1;
-}
-
 /* Accesibilidad */
 
 button:disabled {
@@ -720,10 +619,6 @@ textarea:focus-visible {
     .action-buttons {
         justify-content: flex-start;
     }
-
-    .correction-form {
-        width: 100%;
-    }
 }
 
 @media (max-width: 400px) {
@@ -745,14 +640,6 @@ textarea:focus-visible {
 
     .status-tabs {
         grid-template-columns: 1fr;
-    }
-
-    .correction-form-actions {
-        flex-direction: column;
-    }
-
-    .correction-form-actions button {
-        width: 100%;
     }
 }
 

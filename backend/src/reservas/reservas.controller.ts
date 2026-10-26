@@ -36,14 +36,6 @@ import {
   ReservaCanceladaOperacionRespuestaDto,
 } from './dto/reserva-respuesta.dto.js';
 
-import {
-  SolicitarCorreccionReservaDto,
-} from './dto/solicitar-correccion-reserva.dto.js';
-
-import {
-  ResolverCorreccionReservaDto,
-} from './dto/resolver-correccion-reserva.dto.js';
-
 @Controller('reservas')
 export class ReservasController {
   constructor(
@@ -113,53 +105,6 @@ export class ReservasController {
       Number(id),
       request.user.id,
       dto.estado,
-    );
-  }
-
-  @Post('solicitudes-correccion')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.MEDICO)
-  @ApiCreatedResponse({
-    description: 'Solicitud de corrección creada',
-  })
-  solicitarCorreccion(
-    @Body() dto: SolicitarCorreccionReservaDto,
-    @Req() request: any,
-  ) {
-    return this.reservasService.solicitarCorreccion(
-      request.user.id,
-      dto,
-    );
-  }
-
-  @Get('admin/solicitudes-correccion')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.ADMINISTRADOR)
-  @ApiOkResponse({
-    description: 'Listado de solicitudes de corrección',
-  })
-  obtenerSolicitudesCorreccion() {
-    return this.reservasService.obtenerSolicitudesCorreccion();
-  }
-
-  @Patch('admin/solicitudes-correccion/:id')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.ADMINISTRADOR)
-  @ApiOkResponse({
-    description: 'Solicitud de corrección resuelta',
-  })
-  resolverSolicitudCorreccion(
-    @Param('id') id: string,
-    @Body() dto: ResolverCorreccionReservaDto,
-    @Req() request: any,
-  ) {
-    return this.reservasService.resolverSolicitudCorreccion(
-      Number(id),
-      request.user.id,
-      dto,
     );
   }
 

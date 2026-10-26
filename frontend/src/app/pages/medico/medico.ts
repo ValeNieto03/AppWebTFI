@@ -9,7 +9,6 @@ import {
   Reserva,
   ReservasService,
   EstadoReservaMedico,
-  EstadoSolicitadoCorreccion,
 } from '../../services/reservas';
 
 type PestanaReservas =
@@ -53,12 +52,6 @@ export class Medico implements OnInit {
     signal<ModalConfirmacionMedico | null>(null);
 
   procesandoConfirmacion = signal(false);
-
-  // Solicitudes de corrección.
-  reservaEnCorreccion = signal<number | null>(null);
-  estadoSolicitado: EstadoSolicitadoCorreccion = 'ATENDIDO';
-  motivoCorreccion = '';
-  enviandoCorreccion = signal(false);
 
   // Ordena los turnos por fecha.
   reservasOrdenadas = computed(() => {
@@ -256,124 +249,6 @@ export class Medico implements OnInit {
           this.error.set(
             err.error?.message ??
             'No se pudo actualizar el estado del turno.',
-          );
-        },
-      });
-  }
-
-  // Abre el formulario para solicitar una corrección.
-  abrirFormularioCorreccion(
-    reserva: Reserva,
-  ): void {
-    const estado = reserva.estado.trim().toLowerCase();
-
-    if (
-      estado !== 'atendido' &&
-      estado !== 'ausente'
-    ) {
-      return;
-    }
-
-    this.reservaEnCorreccion.set(reserva.id);
-
-    this.estadoSolicitado =
-      estado === 'atendido'
-        ? 'AUSENTE'
-        : 'ATENDIDO';
-
-    this.motivoCorreccion = '';
-    this.error.set('');
-    this.mensaje.set('');
-  }
-
-  // Cierra el formulario de corrección.
-  cerrarFormularioCorreccion(): void {
-    if (this.enviandoCorreccion()) {
-      return;
-    }
-
-    this.reservaEnCorreccion.set(null);
-    this.motivoCorreccion = '';
-  }
-
-  // Envía la solicitud de corrección al backend.
-  enviarSolicitudCorreccion(
-    reserva: Reserva,
-  ): void {
-    const motivo = this.motivoCorreccion.trim();
-
-    if (this.enviandoCorreccion()) {
-      return;
-    }
-
-    if (motivo.length === 0) {
-      this.error.set(
-        'Tenés que indicar el motivo de la corrección.',
-      );
-      return;
-    }
-
-    if (motivo.length > 1000) {
-      this.error.set(
-        'El motivo no puede superar los 1000 caracteres.',
-      );
-      return;
-    }
-
-    const estadoActual =
-      reserva.estado.trim().toLowerCase();
-
-    if (
-      estadoActual !== 'atendido' &&
-      estadoActual !== 'ausente'
-    ) {
-      this.error.set(
-        'Solo se pueden solicitar correcciones de turnos atendidos o ausentes.',
-      );
-      return;
-    }
-
-    if (
-      this.estadoSolicitado.toLowerCase() === estadoActual
-    ) {
-      this.error.set(
-        'El estado solicitado debe ser diferente del estado actual.',
-      );
-      return;
-    }
-
-    this.error.set('');
-    this.mensaje.set('');
-    this.enviandoCorreccion.set(true);
-
-    this.reservasService
-      .solicitarCorreccionTurno(
-        reserva.id,
-        this.estadoSolicitado,
-        motivo,
-      )
-      .subscribe({
-        next: (respuesta) => {
-          this.enviandoCorreccion.set(false);
-          this.reservaEnCorreccion.set(null);
-          this.motivoCorreccion = '';
-
-          this.mensaje.set(
-            respuesta.mensaje ||
-            'La solicitud de corrección fue enviada al administrador.',
-          );
-        },
-        error: (err) => {
-          console.error(
-            'Error al solicitar corrección:',
-            err,
-          );
-
-          this.enviandoCorreccion.set(false);
-
-          this.error.set(
-            err.error?.message ??
-            'No se pudo enviar la solicitud de corrección.',
           );
         },
       });
