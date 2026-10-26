@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict p878kj9xrOblkSDA02TsazQGUHs5aA9ntWBWntFkpT0fhlroR4ezy1Y4w6VO1PJ
+\restrict G02O8b4dUPjP70yleRnxjYRHv6R5lf7sBtduQ8bihF3ze81ckEXG9elVj5P9AUd
 
 -- Dumped from database version 18.6
 -- Dumped by pg_dump version 18.6
@@ -223,6 +223,7 @@ ALTER TABLE ONLY public.usuarios ALTER COLUMN id SET DEFAULT nextval('public.usu
 
 COPY public.medicos (id, id_usuario, matricula, valor_consulta) FROM stdin;
 1	1	12345	7000
+2	8	23456	9000
 \.
 
 
@@ -246,6 +247,14 @@ COPY public.reservas (id, id_medico, id_paciente, fecha_hora, estado, valor_cons
 4	1	2	2026-10-18 14:00:00	ACTIVO	7000
 5	1	2	2026-10-19 10:00:00	CANCELADO	7000
 6	1	2	2026-10-19 10:00:00	ACTIVO	7000
+7	1	2	2026-10-27 15:00:00	AUSENTE	7000
+8	1	2	2026-10-27 14:00:00	CANCELADO	7000
+9	1	2	2026-10-28 10:00:00	CANCELADO	7000
+10	1	2	2026-10-28 11:00:00	ACTIVO	8000
+11	1	2	2026-10-29 09:00:00	ATENDIDO	7000
+12	1	2	2026-10-29 10:00:00	AUSENTE	7000
+13	2	2	2026-10-29 09:00:00	ACTIVO	9000
+14	2	2	2026-10-30 11:00:00	ACTIVO	9000
 \.
 
 
@@ -258,7 +267,7 @@ COPY public.usuarios (id, documento, apellidos, nombres, email, clave, estado, r
 2	1002	Gomez	Ana	paciente1@clinica.com	$2b$10$jA9EiC42icuYYNQYb52GouKEBV6qihB1V1tQo25q3Qy447.3dyIzK	ACTIVO	PACIENTE
 3	1003	Lopez	Carla	admin1@clinica.com	$2b$10$jA9EiC42icuYYNQYb52GouKEBV6qihB1V1tQo25q3Qy447.3dyIzK	ACTIVO	ADMINISTRADOR
 4	1004	Baja	Pedro	baja1@clinica.com	$2b$10$jA9EiC42icuYYNQYb52GouKEBV6qihB1V1tQo25q3Qy447.3dyIzK	BAJA	PACIENTE
-7	5555	Otro	Otro	paciente1@clinica.com	$2b$10$vbgBBpFdCrI5lDOK8OTrA.mG3s2SGaWhH10UOwjbWi6kvQnxyx1gK	ACTIVO	PACIENTE
+8	1005	Fernandez	Laura	medico2@clinica.com	$2b$10$jA9EiC42icuYYNQYb52GouKEBV6qihB1V1tQo25q3Qy447.3dyIzK	ACTIVO	MEDICO
 \.
 
 
@@ -266,7 +275,7 @@ COPY public.usuarios (id, documento, apellidos, nombres, email, clave, estado, r
 -- Name: medicos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.medicos_id_seq', 1, true);
+SELECT pg_catalog.setval('public.medicos_id_seq', 2, true);
 
 
 --
@@ -280,14 +289,14 @@ SELECT pg_catalog.setval('public.migrations_id_seq', 1, true);
 -- Name: reservas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.reservas_id_seq', 6, true);
+SELECT pg_catalog.setval('public.reservas_id_seq', 14, true);
 
 
 --
 -- Name: usuarios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.usuarios_id_seq', 7, true);
+SELECT pg_catalog.setval('public.usuarios_id_seq', 8, true);
 
 
 --
@@ -373,5 +382,5 @@ ALTER TABLE ONLY public.reservas
 -- PostgreSQL database dump complete
 --
 
-\unrestrict p878kj9xrOblkSDA02TsazQGUHs5aA9ntWBWntFkpT0fhlroR4ezy1Y4w6VO1PJ
+\unrestrict G02O8b4dUPjP70yleRnxjYRHv6R5lf7sBtduQ8bihF3ze81ckEXG9elVj5P9AUd
 

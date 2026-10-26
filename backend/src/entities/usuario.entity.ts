@@ -25,7 +25,7 @@ export class Usuario {
   @Column({ type: 'text' })
   nombres: string;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'text' })
   email: string;
 
   @Column({ type: 'text' })

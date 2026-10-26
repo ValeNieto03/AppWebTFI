@@ -55,5 +55,6 @@ Todos usan la clave `password123`:
 | Email | Rol |
 |---|---|
 | admin1@clinica.com | Administrador |
-| medico1@clinica.com | Médico |
+| medico1@clinica.com | Médico (Juan Perez) |
+| medico2@clinica.com | Médico (Laura Fernandez) |
 | paciente1@clinica.com | Paciente |
