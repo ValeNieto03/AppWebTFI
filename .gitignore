@@ -78,3 +78,9 @@ Thumbs.db
 # Compodoc
 backend/documentation/
 frontend/documentation/
+# ==========================================
+# Archivos locales del editor
+# ==========================================
+
+CLAUDE.md
+.claude/
