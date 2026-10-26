@@ -53,16 +53,16 @@ export class ReservasService {
             id: medico.id_usuario,
           });
 
-          datosMedico = {
-            id: medico.id,
-            nombre: usuarioMedico
-              ? `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`
-              : null,
-            documento: usuarioMedico?.documento ?? null,
-            email: usuarioMedico?.email ?? null,
-            matricula: medico.matricula,
-            valor_consulta: medico.valor_consulta,
-          };
+          if (usuarioMedico) {
+            datosMedico = {
+              id: medico.id,
+              nombre: `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`,
+              documento: usuarioMedico.documento,
+              email: usuarioMedico.email,
+              matricula: medico.matricula,
+              valor_consulta: medico.valor_consulta,
+            };
+          }
         }
 
         return {
@@ -117,16 +117,16 @@ export class ReservasService {
             id: medico.id_usuario,
           });
 
-          datosMedico = {
-            id: medico.id,
-            nombre: usuarioMedico
-              ? `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`
-              : null,
-            documento: usuarioMedico?.documento ?? null,
-            email: usuarioMedico?.email ?? null,
-            matricula: medico.matricula,
-            valor_consulta: medico.valor_consulta,
-          };
+          if (usuarioMedico) {
+            datosMedico = {
+              id: medico.id,
+              nombre: `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`,
+              documento: usuarioMedico.documento,
+              email: usuarioMedico.email,
+              matricula: medico.matricula,
+              valor_consulta: medico.valor_consulta,
+            };
+          }
         }
 
         return {

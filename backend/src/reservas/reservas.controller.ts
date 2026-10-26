@@ -49,7 +49,7 @@ export class ReservasController {
   @ApiOkResponse({
     type: ListadoReservasRespuestaDto,
   })
-  obtenerReservas(@Req() request: any) {
+  obtenerReservas(@Req() request: any): Promise<ListadoReservasRespuestaDto> {
     return this.reservasService.obtenerPorPaciente(
       request.user.id,
     );
@@ -62,7 +62,7 @@ export class ReservasController {
   @ApiOkResponse({
     type: [ReservaRespuestaDto],
   })
-  obtenerReservasAdmin() {
+  obtenerReservasAdmin(): Promise<ReservaRespuestaDto[]> {
     return this.reservasService.obtenerTodas();
   }
 
@@ -82,7 +82,7 @@ export class ReservasController {
   obtenerReservasMedico(
     @Req() request: any,
     @Query('fecha') fecha?: string,
-  ) {
+  ): Promise<ListadoReservasMedicoRespuestaDto> {
     return this.reservasService.obtenerPorMedico(
       request.user.id,
       fecha,
@@ -100,7 +100,7 @@ export class ReservasController {
     @Param('id') id: string,
     @Body() dto: CambiarEstadoReservaDto,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaEstadoRespuestaDto> {
     return this.reservasService.cambiarEstado(
       Number(id),
       request.user.id,
@@ -118,7 +118,7 @@ export class ReservasController {
   crearReserva(
     @Body() crearReservaDto: CrearReservaDto,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaCreadaOperacionRespuestaDto> {
     return this.reservasService.crear(
       crearReservaDto,
       request.user,
@@ -135,7 +135,7 @@ export class ReservasController {
   cancelarReserva(
     @Param('id') id: string,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaCanceladaOperacionRespuestaDto> {
     return this.reservasService.cancelar(
       Number(id),
       request.user.id,
@@ -149,7 +149,9 @@ export class ReservasController {
   @ApiOkResponse({
     type: ReservaCanceladaOperacionRespuestaDto,
   })
-  cancelarReservaAdmin(@Param('id') id: string) {
+  cancelarReservaAdmin(
+    @Param('id') id: string,
+  ): Promise<ReservaCanceladaOperacionRespuestaDto> {
     return this.reservasService.cancelarAdmin(
       Number(id),
     );

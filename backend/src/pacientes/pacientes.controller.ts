@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -25,20 +25,7 @@ export class PacientesController {
   @ApiOkResponse({
     type: [UsuarioRespuestaDto],
   })
-  obtenerPacientes() {
+  obtenerPacientes(): Promise<UsuarioRespuestaDto[]> {
     return this.pacientesService.obtenerTodos();
-  }
-
-  @Get('me')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolUsuario.PACIENTE)
-  @ApiOkResponse({
-    type: UsuarioRespuestaDto,
-  })
-  obtenerMiPerfil(@Req() request: any) {
-    return this.pacientesService.obtenerPorId(
-      request.user.id,
-    );
   }
 }

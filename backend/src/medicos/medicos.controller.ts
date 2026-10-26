@@ -4,11 +4,8 @@ import {
     Get,
     Patch,
     Param,
-    Req,
     UseGuards,
-    UnauthorizedException,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import {
     ApiBearerAuth,
     ApiOkResponse,
@@ -34,29 +31,8 @@ export class MedicosController {
     @ApiOkResponse({
         type: [MedicoRespuestaDto],
     })
-    obtenerMedicos() {
+    obtenerMedicos(): Promise<MedicoRespuestaDto[]> {
         return this.medicosService.obtenerTodos();
-    }
-
-    @Get('mi-perfil')
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(RolUsuario.MEDICO)
-    @ApiOkResponse({
-        description: 'Perfil del médico autenticado',
-    })
-    obtenerMiPerfil(@Req() req: Request) {
-        const usuario = req.user as
-            | { id: number }
-            | undefined;
-
-        if (!usuario) {
-            throw new UnauthorizedException(
-                'Debe iniciar sesión para consultar su perfil.',
-            );
-        }
-
-        return this.medicosService.obtenerPorUsuario(usuario);
     }
 
     @Patch(':id/valor')
@@ -69,7 +45,7 @@ export class MedicosController {
     modificarValorConsulta(
         @Param('id') id: string,
         @Body() dto: ModificarValorConsultaDto,
-    ) {
+    ): Promise<ModificarValorConsultaRespuestaDto> {
         return this.medicosService.modificarValorConsulta(
             Number(id),
             dto.valor_consulta,

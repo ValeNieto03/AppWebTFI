@@ -14,7 +14,7 @@ export class AuthController {
   @ApiOkResponse({
     type: LoginRespuestaDto,
   })
-  login(@Body() loginDto: LoginDto) {
+  login(@Body() loginDto: LoginDto): Promise<LoginRespuestaDto> {
     return this.authService.login(loginDto);
   }
 }
