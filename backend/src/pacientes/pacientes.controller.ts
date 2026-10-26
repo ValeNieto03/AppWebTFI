@@ -2,6 +2,7 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { PacientesService } from './pacientes.service.js';
@@ -12,6 +13,7 @@ import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { RolUsuario } from '../entities/usuario.entity.js';
 
+@ApiTags('Pacientes')
 @Controller('pacientes')
 export class PacientesController {
   constructor(

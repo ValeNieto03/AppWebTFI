@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict G02O8b4dUPjP70yleRnxjYRHv6R5lf7sBtduQ8bihF3ze81ckEXG9elVj5P9AUd
+\restrict 6UueMD7G8jS7ctC2lIcEXLhnNGSpJ31pXW08d9QdZLq1sC9eSZ85LMhdvkWc4YS
 
 -- Dumped from database version 18.6
 -- Dumped by pg_dump version 18.6
@@ -20,10 +20,10 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: reservas_estado_enum; Type: TYPE; Schema: public; Owner: -
+-- Name: estados_reservas; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.reservas_estado_enum AS ENUM (
+CREATE TYPE public.estados_reservas AS ENUM (
     'ACTIVO',
     'ATENDIDO',
     'AUSENTE',
@@ -32,20 +32,20 @@ CREATE TYPE public.reservas_estado_enum AS ENUM (
 
 
 --
--- Name: usuarios_estado_enum; Type: TYPE; Schema: public; Owner: -
+-- Name: estados_usuarios; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.usuarios_estado_enum AS ENUM (
+CREATE TYPE public.estados_usuarios AS ENUM (
     'ACTIVO',
     'BAJA'
 );
 
 
 --
--- Name: usuarios_rol_enum; Type: TYPE; Schema: public; Owner: -
+-- Name: roles_usuarios; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.usuarios_rol_enum AS ENUM (
+CREATE TYPE public.roles_usuarios AS ENUM (
     'MEDICO',
     'PACIENTE',
     'ADMINISTRADOR'
@@ -128,7 +128,7 @@ CREATE TABLE public.reservas (
     id_medico integer NOT NULL,
     id_paciente integer NOT NULL,
     fecha_hora timestamp without time zone NOT NULL,
-    estado public.reservas_estado_enum NOT NULL,
+    estado public.estados_reservas NOT NULL,
     valor_consulta integer NOT NULL
 );
 
@@ -164,8 +164,8 @@ CREATE TABLE public.usuarios (
     nombres text NOT NULL,
     email text NOT NULL,
     clave text NOT NULL,
-    estado public.usuarios_estado_enum NOT NULL,
-    rol public.usuarios_rol_enum NOT NULL
+    estado public.estados_usuarios NOT NULL,
+    rol public.roles_usuarios NOT NULL
 );
 
 
@@ -351,7 +351,7 @@ ALTER TABLE ONLY public.usuarios
 -- Name: UQ_reservas_medico_fecha_activa; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX "UQ_reservas_medico_fecha_activa" ON public.reservas USING btree (id_medico, fecha_hora) WHERE (estado = 'ACTIVO'::public.reservas_estado_enum);
+CREATE UNIQUE INDEX "UQ_reservas_medico_fecha_activa" ON public.reservas USING btree (id_medico, fecha_hora) WHERE (estado = 'ACTIVO'::public.estados_reservas);
 
 
 --
@@ -382,5 +382,5 @@ ALTER TABLE ONLY public.reservas
 -- PostgreSQL database dump complete
 --
 
-\unrestrict G02O8b4dUPjP70yleRnxjYRHv6R5lf7sBtduQ8bihF3ze81ckEXG9elVj5P9AUd
+\unrestrict 6UueMD7G8jS7ctC2lIcEXLhnNGSpJ31pXW08d9QdZLq1sC9eSZ85LMhdvkWc4YS
 

@@ -9,6 +9,7 @@ import {
 import {
     ApiBearerAuth,
     ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 
 import { MedicosService } from './medicos.service.js';
@@ -21,6 +22,7 @@ import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { RolUsuario } from '../entities/usuario.entity.js';
 
+@ApiTags('Medicos')
 @Controller('medicos')
 export class MedicosController {
     constructor(

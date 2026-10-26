@@ -15,6 +15,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiQuery,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { ReservasService } from './reservas.service.js';
@@ -36,6 +37,7 @@ import {
   ReservaCanceladaOperacionRespuestaDto,
 } from './dto/reserva-respuesta.dto.js';
 
+@ApiTags('Reservas')
 @Controller('reservas')
 export class ReservasController {
   constructor(

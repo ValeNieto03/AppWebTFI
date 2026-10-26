@@ -368,9 +368,13 @@ export class ReservasService {
     }
 
     const fechaMaxima = new Date(ahora);
+    fechaMaxima.setHours(0, 0, 0, 0);
     fechaMaxima.setDate(fechaMaxima.getDate() + 30);
 
-    if (fechaHora > fechaMaxima) {
+    const diaReserva = new Date(fechaHora);
+    diaReserva.setHours(0, 0, 0, 0);
+
+    if (diaReserva > fechaMaxima) {
       throw new BadRequestException(
         'No se puede reservar con más de 30 días de anticipación',
       );
