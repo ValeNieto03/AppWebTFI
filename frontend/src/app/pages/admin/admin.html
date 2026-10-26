@@ -3,7 +3,7 @@
         <div class="header-text">
             <span class="eyebrow">CLÍNICA MÉDICA</span>
             <h1>Panel de administración</h1>
-            <p>Consultá médicos y pacientes de la clínica.</p>
+            <p>Gestioná los turnos y el valor de la consulta de los médicos.</p>
         </div>
 
         <button type="button" class="btn btn-header" (click)="cerrarSesion()">
@@ -15,6 +15,11 @@
         <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'resumen'"
             (click)="cambiarSeccion('resumen')">
             Resumen
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'turnos'"
+            (click)="cambiarSeccion('turnos')">
+            Turnos
         </button>
 
         <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'medicos'"
@@ -39,6 +44,13 @@
         </div>
 
         <div class="summary-grid">
+            <button type="button" class="summary-card" (click)="cambiarSeccion('turnos')">
+                <span class="summary-icon">▤</span>
+                <span class="summary-label">Turnos reservados</span>
+                <strong>{{ reservas().length }}</strong>
+                <span class="summary-foot">Reservar y cancelar turnos →</span>
+            </button>
+
             <button type="button" class="summary-card" (click)="cambiarSeccion('medicos')">
                 <span class="summary-icon">✚</span>
                 <span class="summary-label">Médicos registrados</span>
@@ -55,13 +67,144 @@
         </div>
     </section>
 
+    <!-- TURNOS -->
+    <section *ngIf="seccionActiva() === 'turnos'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">GESTIÓN DE TURNOS</span>
+                <h2>Turnos</h2>
+                <p>Reservá turnos para los pacientes y cancelá los que todavía no empezaron.</p>
+            </div>
+        </div>
+
+        <!-- Formulario para reservar -->
+        <div class="panel-card">
+            <form class="admin-form" (ngSubmit)="reservar()">
+                <h3 class="panel-title">Reservar turno</h3>
+
+                <div *ngIf="errorNuevaReserva()" class="alert alert-error" role="alert">
+                    {{ errorNuevaReserva() }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reservaPaciente">Paciente *</label>
+                        <select id="reservaPaciente" name="reservaPaciente" [(ngModel)]="nuevaReserva.id_paciente"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un paciente</option>
+                            <option *ngFor="let paciente of pacientes()" [value]="paciente.id">
+                                {{ paciente.apellidos }}, {{ paciente.nombres }} ({{ paciente.documento }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaMedico">Médico *</label>
+                        <select id="reservaMedico" name="reservaMedico" [(ngModel)]="nuevaReserva.id_medico"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un médico</option>
+                            <option *ngFor="let medico of medicos()" [value]="medico.id">
+                                {{ medico.nombre }} - {{ formatearImporte(medico.valor_consulta) }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaFecha">Fecha *</label>
+                        <input id="reservaFecha" name="reservaFecha" type="date" [min]="fechaMinima"
+                            [max]="fechaMaxima" [(ngModel)]="nuevaReserva.fecha" [disabled]="creandoReserva()" />
+                        <small>Hasta 30 días de anticipación.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaHora">Horario *</label>
+                        <select id="reservaHora" name="reservaHora" [(ngModel)]="nuevaReserva.hora"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un horario</option>
+                            <option *ngFor="let hora of horariosDisponibles" [value]="hora">
+                                {{ hora }}
+                            </option>
+                        </select>
+                        <small>Turnos de una hora, de 8 a 16 hs.</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" [disabled]="creandoReserva()">
+                        {{ creandoReserva() ? 'Reservando...' : 'Reservar turno' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Listado de turnos -->
+        <div class="panel-card">
+            <div class="table-toolbar">
+                <h3 class="panel-title">Turnos reservados</h3>
+
+                <button type="button" class="btn btn-secondary" [disabled]="cargandoReservas()"
+                    (click)="cargarReservas()">
+                    {{ cargandoReservas() ? 'Cargando...' : '↻ Actualizar' }}
+                </button>
+            </div>
+
+            <div *ngIf="errorReservas()" class="alert alert-error" role="alert">
+                {{ errorReservas() }}
+            </div>
+
+            <div *ngIf="cargandoReservas()" class="loading-state">
+                Cargando turnos...
+            </div>
+
+            <div *ngIf="!cargandoReservas() && reservas().length === 0" class="empty-state">
+                No hay turnos reservados.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoReservas() && reservas().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y hora</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Valor</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let reserva of reservasOrdenadas()">
+                            <td><strong>{{ formatearFecha(reserva.fecha_hora) }}</strong></td>
+                            <td>{{ reserva.paciente?.nombre ?? '-' }}</td>
+                            <td>{{ reserva.medico?.nombre ?? '-' }}</td>
+                            <td>{{ formatearImporte(reserva.valor_consulta) }}</td>
+                            <td>
+                                <span class="status-badge" [class.status-active]="esActiva(reserva)"
+                                    [class.status-inactive]="!esActiva(reserva)">
+                                    {{ reserva.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                <button *ngIf="esActiva(reserva)" type="button" class="btn btn-danger btn-small"
+                                    [disabled]="procesandoAccionModal()" (click)="cancelarReserva(reserva)">
+                                    Cancelar
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
     <!-- MÉDICOS -->
     <section *ngIf="seccionActiva() === 'medicos'" class="admin-section">
         <div class="section-heading">
             <div>
                 <span class="eyebrow">EQUIPO PROFESIONAL</span>
                 <h2>Médicos</h2>
-                <p>Listado de profesionales registrados.</p>
+                <p>Listado de profesionales. Desde acá podés modificar el valor de la consulta.</p>
             </div>
 
             <button type="button" class="btn btn-secondary" [disabled]="cargandoMedicos()" (click)="cargarMedicos()">
@@ -103,7 +246,19 @@
                             <td>{{ medico.nombre }}</td>
                             <td>{{ medico.email }}</td>
                             <td>{{ medico.matricula }}</td>
-                            <td>{{ formatearImporte(medico.valor_consulta) }}</td>
+                            <td>
+                                <div class="valor-editor">
+                                    <input type="number" min="1" step="1" [name]="'valor-' + medico.id"
+                                        [attr.aria-label]="'Valor de consulta de ' + medico.nombre"
+                                        [(ngModel)]="valoresEditados[medico.id]"
+                                        [disabled]="guardandoValorId() === medico.id" />
+
+                                    <button type="button" class="btn btn-primary btn-small"
+                                        [disabled]="guardandoValorId() !== null" (click)="guardarValor(medico)">
+                                        {{ guardandoValorId() === medico.id ? 'Guardando...' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </td>
                             <td>
                                 <span class="status-badge"
                                     [class.status-active]="medico.estado?.toLowerCase() === 'activo'"
@@ -179,6 +334,13 @@
             </div>
         </div>
     </section>
+
+    <div *ngIf="mensajeExito()" class="success-toast" role="status" aria-live="polite">
+        <span>{{ mensajeExito() }}</span>
+        <button type="button" class="toast-close" aria-label="Cerrar mensaje" (click)="mensajeExito.set('')">
+            ✕
+        </button>
+    </div>
 </div>
 
 <!-- MODAL PERSONALIZADO PARA CONFIRMACIONES -->
@@ -188,6 +350,7 @@
 
         <div class="modal-icono" [class.modal-icono-peligro]="modalEsPeligroso(modal)">
             <span *ngIf="modal.accion.tipo === 'cerrarSesion'">↪</span>
+            <span *ngIf="modal.accion.tipo === 'cancelarReserva'">▤</span>
         </div>
 
         <button type="button" class="modal-close modal-confirmacion-close" aria-label="Cerrar ventana"
@@ -204,7 +367,7 @@
         <footer class="modal-confirmacion-acciones">
             <button type="button" class="btn btn-secondary" [disabled]="procesandoAccionModal()"
                 (click)="cerrarModalAdmin()">
-                Cancelar
+                Volver
             </button>
 
             <button type="button" class="btn" [class.btn-danger]="modalEsPeligroso(modal)"

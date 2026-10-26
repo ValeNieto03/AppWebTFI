@@ -107,19 +107,6 @@ textarea {
     background: #12566d;
 }
 
-.nav-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 22px;
-    padding: 0 6px;
-    color: #92400e;
-    background: #fef3c7;
-    border-radius: 20px;
-    font-size: 11px;
-}
-
 /* SECCIONES */
 
 .admin-section {
@@ -211,7 +198,7 @@ textarea {
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -278,35 +265,6 @@ textarea {
     border: 1px solid #e2e8f0;
     border-radius: 15px;
     box-shadow: 0 4px 14px #0f172a06;
-}
-
-.quick-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.quick-actions h3,
-.filter-panel h3 {
-    margin: 0 0 8px;
-    color: #0f2942;
-    font-size: 19px;
-}
-
-.quick-actions p {
-    margin: 0;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
 }
 
 /* FORMULARIOS */
@@ -376,11 +334,25 @@ textarea {
     padding-top: 4px;
 }
 
-.form-hint {
+.panel-title {
     margin: 0;
-    color: #64748b;
+    color: #0f2942;
+    font-size: 19px;
+}
+
+/* Campo y botón para modificar el valor de la consulta */
+.valor-editor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.valor-editor input {
+    width: 110px;
+    padding: 7px 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
     font-size: 13px;
-    line-height: 1.6;
 }
 
 /* ALERTAS */
@@ -473,37 +445,10 @@ textarea {
     line-height: 1.5;
 }
 
-.role-label {
-    display: inline-block;
-    padding: 5px 8px;
-    color: #334155;
-    background: #f1f5f9;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-.table-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    min-width: 150px;
-}
-
 .btn-small {
     min-height: 32px;
     padding: 7px 10px;
     font-size: 12px;
-}
-
-.btn-enable {
-    color: #166534;
-    background: #dcfce7;
-    border-color: #bbf7d0;
-}
-
-.btn-enable:hover:not(:disabled) {
-    background: #bbf7d0;
 }
 
 /* ESTADOS */
@@ -530,11 +475,6 @@ textarea {
     background: #fee2e2;
 }
 
-.status-pending {
-    color: #92400e;
-    background: #fef3c7;
-}
-
 /* CARGA Y ESTADO VACÍO */
 
 .loading-state,
@@ -552,164 +492,7 @@ textarea {
     border-style: solid;
 }
 
-/* FILTROS DE SOLICITUDES */
-
-.filter-panel h3 {
-    margin-bottom: 18px;
-}
-
-.filter-panel .form-grid {
-    margin-bottom: 18px;
-}
-
-.filter-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.status-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 4px;
-    background: #f1f5f9;
-    border-radius: 11px;
-}
-
-.status-tabs .btn {
-    min-height: 36px;
-    padding: 9px 12px;
-    color: #475569;
-    background: transparent;
-    font-size: 12px;
-}
-
-.status-tabs .btn-primary {
-    color: #fff;
-    background: #176b87;
-}
-
-/* SOLICITUDES */
-
-.request-card {
-    padding: 23px;
-    margin-bottom: 16px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 15px;
-    box-shadow: 0 4px 14px #0f172a06;
-}
-
-.request-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.request-header h3 {
-    margin: 7px 0 4px;
-    color: #0f2942;
-    font-size: 18px;
-}
-
-.request-details {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    padding: 20px 0;
-}
-
-.request-details>div {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-}
-
-.detail-label {
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .4px;
-}
-
-.request-details strong,
-.state-comparison strong {
-    color: #1e293b;
-    font-size: 13px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
-
-.request-details small {
-    color: #64748b;
-    font-size: 12px;
-    overflow-wrap: anywhere;
-}
-
-.state-comparison {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    padding: 17px;
-    background: #f8fafc;
-    border-radius: 11px;
-}
-
-.state-comparison>div {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-}
-
-.request-reason,
-.request-response {
-    margin-top: 18px;
-}
-
-.request-reason>strong,
-.request-response>strong {
-    color: #334155;
-    font-size: 13px;
-}
-
-.request-reason p,
-.request-response p {
-    margin: 8px 0 0;
-    color: #334155;
-    font-size: 13px;
-    line-height: 1.7;
-    overflow-wrap: anywhere;
-}
-
-.request-response {
-    padding: 14px;
-    background: #f8fafc;
-    border-radius: 10px;
-}
-
-.request-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-top: 20px;
-    margin-top: 20px;
-    border-top: 1px solid #e2e8f0;
-}
-
-.request-actions .action-buttons {
-    justify-content: flex-end;
-}
-
-/* VENTANA EMERGENTE DE EDICIÓN */
+/* VENTANA EMERGENTE */
 
 .modal-backdrop {
     position: fixed;
@@ -722,40 +505,6 @@ textarea {
     overflow-y: auto;
     background: rgba(15, 23, 42, .58);
     backdrop-filter: blur(3px);
-}
-
-.modal-edicion {
-    width: 100%;
-    max-width: 580px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 26px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, .25);
-    animation: aparecerModal .18s ease-out;
-}
-
-.modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.modal-header h2 {
-    margin: 7px 0;
-    color: #0f172a;
-    font-size: 24px;
-}
-
-.modal-header p {
-    margin: 0;
-    color: #64748b;
-    font-size: 14px;
-    line-height: 1.5;
 }
 
 .modal-close {
@@ -775,14 +524,6 @@ textarea {
 
 .modal-close:hover:not(:disabled) {
     background: #f1f5f9;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 24px;
 }
 
 /* MENSAJES DE ÉXITO */
@@ -833,10 +574,6 @@ textarea {
 
 @media (max-width: 1100px) {
     .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .request-details {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -908,86 +645,20 @@ textarea {
         font-size: 11px;
     }
 
-    .panel-card,
-    .request-card {
+    .panel-card {
         padding: 16px;
-    }
-
-    .quick-actions {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .quick-actions .action-buttons {
-        display: grid;
-        grid-template-columns: 1fr;
     }
 
     .form-grid {
         grid-template-columns: 1fr;
     }
 
-    .request-details,
-    .state-comparison {
-        grid-template-columns: 1fr;
-    }
-
-    .filter-footer {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .status-tabs {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .status-tabs .btn {
-        width: 100%;
-    }
-
-    .request-header {
-        align-items: flex-start;
-    }
-
-    .request-actions .action-buttons {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    .request-actions .action-buttons .btn,
     .form-actions .btn {
-        width: 100%;
-    }
-
-    .table-actions {
-        flex-direction: column;
-        min-width: 105px;
-    }
-
-    .table-actions .btn {
         width: 100%;
     }
 
     .modal-backdrop {
         padding: 12px;
-    }
-
-    .modal-edicion {
-        max-height: 94vh;
-        padding: 18px;
-    }
-
-    .modal-header h2 {
-        font-size: 22px;
-    }
-
-    .modal-actions {
-        flex-direction: column-reverse;
-    }
-
-    .modal-actions .btn {
-        width: 100%;
     }
 
     .success-toast {

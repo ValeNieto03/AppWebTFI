@@ -62,6 +62,28 @@ export interface CrearReservaDatos {
     fecha_hora: string;
 }
 
+export interface CrearReservaAdminDatos extends CrearReservaDatos {
+    id_paciente: number;
+}
+
+export interface CancelarReservaRespuesta {
+    mensaje: string;
+    reserva: {
+        id: number;
+        fecha_hora: string;
+        estado: string;
+        valor_consulta: number;
+    };
+}
+
+export interface ModificarValorRespuesta {
+    mensaje: string;
+    medico: {
+        id: number;
+        valor_consulta: number;
+    };
+}
+
 export type EstadoReservaMedico = 'ATENDIDO' | 'AUSENTE';
 
 @Injectable({
@@ -153,6 +175,48 @@ export class ReservasService {
         return this.http.patch<CambiarEstadoReservaRespuesta>(
             `${this.apiUrl}/${id}/estado`,
             { estado },
+            { headers: this.obtenerHeaders() },
+        );
+    }
+
+    // ==========================================
+    // FUNCIONES DEL ADMINISTRADOR
+    // ==========================================
+
+    obtenerReservasAdmin(): Observable<Reserva[]> {
+        return this.http.get<Reserva[]>(
+            `${this.apiUrl}/admin`,
+            { headers: this.obtenerHeaders() },
+        );
+    }
+
+    crearReservaAdmin(
+        datos: CrearReservaAdminDatos,
+    ): Observable<CrearReservaRespuesta> {
+        return this.http.post<CrearReservaRespuesta>(
+            this.apiUrl,
+            datos,
+            { headers: this.obtenerHeaders() },
+        );
+    }
+
+    cancelarReservaAdmin(
+        id: number,
+    ): Observable<CancelarReservaRespuesta> {
+        return this.http.patch<CancelarReservaRespuesta>(
+            `${this.apiUrl}/admin/${id}/cancelar`,
+            {},
+            { headers: this.obtenerHeaders() },
+        );
+    }
+
+    modificarValorConsulta(
+        idMedico: number,
+        valorConsulta: number,
+    ): Observable<ModificarValorRespuesta> {
+        return this.http.patch<ModificarValorRespuesta>(
+            `${this.medicosUrl}/${idMedico}/valor`,
+            { valor_consulta: valorConsulta },
             { headers: this.obtenerHeaders() },
         );
     }
