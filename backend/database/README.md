@@ -2,6 +2,8 @@
 
 Esta carpeta tiene `clinica.sql`, una copia de la base hecha con `pg_dump`. El archivo crea las tablas y carga datos de prueba.
 
+El proyecto no usa migraciones de TypeORM: la base se arma importando este archivo. Si cambia la estructura o los datos de prueba, se vuelve a generar `clinica.sql` con `pg_dump`.
+
 Todos los comandos se ejecutan en PowerShell, desde la raíz del repo. Si tu PostgreSQL no es la versión 18, cambiá el `18` de la ruta por tu versión.
 
 ## 1. Crear la base vacía
@@ -26,7 +28,7 @@ Para comprobar que se importó, listá las tablas:
 & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -h localhost -U postgres -d clinicadb -c "\dt"
 ```
 
-Tienen que aparecer `medicos`, `migrations`, `reservas` y `usuarios`.
+Tienen que aparecer `medicos`, `migrations`, `reservas` y `usuarios`. La tabla `migrations` es de TypeORM y quedó de cuando se creó la base; no hace falta tocarla.
 
 ### Si falla en `\restrict` o `\unrestrict`
 
@@ -58,3 +60,4 @@ Todos usan la clave `password123`:
 | medico1@clinica.com | Médico (Juan Perez) |
 | medico2@clinica.com | Médico (Laura Fernandez) |
 | paciente1@clinica.com | Paciente |
+| baja1@clinica.com | Paciente dado de baja (no puede iniciar sesión) |
