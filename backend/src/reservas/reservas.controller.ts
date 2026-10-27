@@ -9,18 +9,23 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
+
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiQuery,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { ReservasService } from './reservas.service.js';
 import { CrearReservaDto } from './dto/crear-reserva.dto.js';
+
 import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { RolUsuario } from '../entities/usuario.entity.js';
+
 import { CambiarEstadoReservaDto } from './dto/cambiar-estado-reserva.dto.js';
 
 import {
@@ -32,9 +37,12 @@ import {
   ReservaCanceladaOperacionRespuestaDto,
 } from './dto/reserva-respuesta.dto.js';
 
+@ApiTags('Reservas')
 @Controller('reservas')
 export class ReservasController {
-  constructor(private readonly reservasService: ReservasService) { }
+  constructor(
+    private readonly reservasService: ReservasService,
+  ) {}
 
   @Get()
   @ApiBearerAuth()
@@ -43,8 +51,10 @@ export class ReservasController {
   @ApiOkResponse({
     type: ListadoReservasRespuestaDto,
   })
-  obtenerReservas(@Req() request: any) {
-    return this.reservasService.obtenerPorPaciente(request.user.id);
+  obtenerReservas(@Req() request: any): Promise<ListadoReservasRespuestaDto> {
+    return this.reservasService.obtenerPorPaciente(
+      request.user.id,
+    );
   }
 
   @Get('admin')
@@ -54,7 +64,7 @@ export class ReservasController {
   @ApiOkResponse({
     type: [ReservaRespuestaDto],
   })
-  obtenerReservasAdmin() {
+  obtenerReservasAdmin(): Promise<ReservaRespuestaDto[]> {
     return this.reservasService.obtenerTodas();
   }
 
@@ -62,13 +72,19 @@ export class ReservasController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolUsuario.MEDICO)
+  @ApiQuery({
+    name: 'fecha',
+    required: false,
+    description: 'Fecha opcional para filtrar las reservas (AAAA-MM-DD)',
+    example: '2026-10-15',
+  })
   @ApiOkResponse({
     type: ListadoReservasMedicoRespuestaDto,
   })
   obtenerReservasMedico(
     @Req() request: any,
-    @Query('fecha') fecha: string,
-  ) {
+    @Query('fecha') fecha?: string,
+  ): Promise<ListadoReservasMedicoRespuestaDto> {
     return this.reservasService.obtenerPorMedico(
       request.user.id,
       fecha,
@@ -86,7 +102,7 @@ export class ReservasController {
     @Param('id') id: string,
     @Body() dto: CambiarEstadoReservaDto,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaEstadoRespuestaDto> {
     return this.reservasService.cambiarEstado(
       Number(id),
       request.user.id,
@@ -104,7 +120,7 @@ export class ReservasController {
   crearReserva(
     @Body() crearReservaDto: CrearReservaDto,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaCreadaOperacionRespuestaDto> {
     return this.reservasService.crear(
       crearReservaDto,
       request.user,
@@ -121,7 +137,7 @@ export class ReservasController {
   cancelarReserva(
     @Param('id') id: string,
     @Req() request: any,
-  ) {
+  ): Promise<ReservaCanceladaOperacionRespuestaDto> {
     return this.reservasService.cancelar(
       Number(id),
       request.user.id,
@@ -135,7 +151,11 @@ export class ReservasController {
   @ApiOkResponse({
     type: ReservaCanceladaOperacionRespuestaDto,
   })
-  cancelarReservaAdmin(@Param('id') id: string) {
-    return this.reservasService.cancelarAdmin(Number(id));
+  cancelarReservaAdmin(
+    @Param('id') id: string,
+  ): Promise<ReservaCanceladaOperacionRespuestaDto> {
+    return this.reservasService.cancelarAdmin(
+      Number(id),
+    );
   }
 }

@@ -1,10 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum EstadoReserva {
-  ACTIVO = 'Activo',
-  ATENDIDO = 'Atendido',
-  AUSENTE = 'Ausente',
-  CANCELADO = 'Cancelado',
+  ACTIVO = 'ACTIVO',
+  ATENDIDO = 'ATENDIDO',
+  AUSENTE = 'AUSENTE',
+  CANCELADO = 'CANCELADO',
 }
 
 @Entity('reservas')
@@ -24,6 +24,7 @@ export class Reserva {
   @Column({
     type: 'enum',
     enum: EstadoReserva,
+    enumName: 'estados_reservas',
   })
   estado: EstadoReserva;
 

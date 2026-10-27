@@ -1,93 +1,379 @@
 <div class="patient-page">
-
     <header class="patient-header">
         <div class="header-content">
-
             <div>
                 <p class="eyebrow">Portal del paciente</p>
-
                 <h1>Mis turnos</h1>
-
-                <p class="subtitle">
-                    Consultá y gestioná tus turnos médicos.
-                </p>
+                <p class="subtitle">Consultá y gestioná tus turnos médicos.</p>
             </div>
 
             <button class="logout-button" type="button" (click)="cerrarSesion()">
                 Cerrar sesión
             </button>
-
         </div>
     </header>
 
     <main class="patient-content">
+        <section class="welcome-section">
+            <div>
+                <h2>Tu atención médica</h2>
+                <p>
+                    Desde acá podés reservar nuevas consultas, consultar tus reservas
+                    y conocer el estado de cada turno.
+                </p>
+            </div>
 
-        <section class="options-grid">
+            <button class="refresh-button" type="button" (click)="cargarMisTurnos()" [disabled]="cargando()">
+                {{ cargando() ? 'Actualizando...' : 'Actualizar turnos' }}
+            </button>
+        </section>
 
-            <article class="option-card">
-
-                <div class="option-icon">
-                    +
-                </div>
-
-                <div>
-                    <h3>Reservar turno</h3>
-
-                    <p>
-                        Elegí un médico, una fecha y un horario disponible.
-                    </p>
-                </div>
-
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span class="summary-label">Total de turnos</span>
+                <strong>{{ reservas().length }}</strong>
+                <span class="summary-description">Reservas registradas</span>
             </article>
 
-            <article class="option-card">
-
-                <div class="option-icon">
-                    ✓
-                </div>
-
-                <div>
-                    <h3>Mis turnos</h3>
-
-                    <p>
-                        Consultá los turnos que tenés reservados.
-                    </p>
-                </div>
-
+            <article class="summary-card">
+                <span class="summary-label">Activos</span>
+                <strong>{{ contarPorEstado('ACTIVO') }}</strong>
+                <span class="summary-description">Turnos pendientes de atención</span>
             </article>
 
-            <article class="option-card">
+            <article class="summary-card">
+                <span class="summary-label">Atendidos</span>
+                <strong>{{ contarPorEstado('ATENDIDO') }}</strong>
+                <span class="summary-description">Consultas realizadas</span>
+            </article>
+        </section>
 
-                <div class="option-icon">
-                    ×
+        <!-- Formulario para reservar un turno -->
+        <section class="booking-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">NUEVA CONSULTA</p>
+                    <h2>Solicitar un turno</h2>
+                </div>
+            </div>
+
+            <div class="booking-card">
+                <p class="booking-description">
+                    Elegí un médico, una fecha y un horario para reservar tu consulta.
+                </p>
+
+                @if (cargandoMedicos()) {
+                <div class="booking-feedback">
+                    <div class="loader"></div>
+                    <p>Estamos cargando los médicos...</p>
+                </div>
+                } @else if (errorMedicos()) {
+                <div class="form-message form-error" role="alert">
+                    {{ errorMedicos() }}
                 </div>
 
-                <div>
-                    <h3>Cancelar turno</h3>
+                <button class="refresh-button" type="button" (click)="cargarMedicos()">
+                    Volver a cargar médicos
+                </button>
+                } @else if (medicos().length === 0) {
+                <div class="form-message">
+                    Por el momento no hay médicos activos disponibles.
+                </div>
+                } @else {
+                <form class="booking-form" (submit)="$event.preventDefault(); crearReserva()">
+                    <div class="form-field">
+                        <label for="medico">Médico</label>
 
-                    <p>
-                        Cancelá un turno respetando el plazo permitido.
+                        <select id="medico" name="medico" [value]="medicoSeleccionado()"
+                            (change)="medicoSeleccionado.set($any($event.target).value)" required>
+                            <option value="" disabled>Seleccioná un médico</option>
+
+                            @for (medico of medicos(); track medico.id) {
+                            <option [value]="medico.id">
+                                {{ medico.nombre }} — Matrícula: {{ medico.matricula }}
+                            </option>
+                            }
+                        </select>
+
+                        @if (obtenerMedicoSeleccionado(); as medico) {
+                        <span class="detail-secondary">
+                            Valor de la consulta:
+                            <strong class="price">
+                                {{
+                                medico.valor_consulta
+                                | currency:'ARS':'symbol':'1.2-2':'es-AR'
+                                }}
+                            </strong>
+                        </span>
+                        }
+                    </div>
+
+                    <div class="form-field">
+                        <label for="fecha">Fecha de la consulta</label>
+
+                        <input id="fecha" name="fecha" type="date" [min]="fechaMinima" [max]="fechaMaxima"
+                            [value]="fechaSeleccionada()" (change)="fechaSeleccionada.set($any($event.target).value)"
+                            required />
+
+                        <small>Podés reservar desde hoy hasta dentro de 30 días.</small>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="hora">Horario</label>
+
+                        <select id="hora" name="hora" [value]="horaSeleccionada()"
+                            (change)="horaSeleccionada.set($any($event.target).value)" required>
+                            <option value="" disabled>Seleccioná un horario</option>
+
+                            @for (hora of horariosDisponibles; track hora) {
+                            <option [value]="hora">{{ hora }}</option>
+                            }
+                        </select>
+
+                        <small>Los horarios están sujetos a disponibilidad.</small>
+                    </div>
+
+                    @if (errorFormulario()) {
+                    <div class="form-message form-error" role="alert">
+                        {{ errorFormulario() }}
+                    </div>
+                    }
+
+                    @if (mensajeFormulario()) {
+                    <div class="form-message form-success" role="status">
+                        {{ mensajeFormulario() }}
+                    </div>
+                    }
+
+                    <div class="booking-actions">
+                        <button class="booking-button" type="submit" [disabled]="creandoReserva()">
+                            {{ creandoReserva() ? 'Reservando...' : 'Confirmar reserva' }}
+                        </button>
+                    </div>
+                </form>
+                }
+            </div>
+        </section>
+
+        <!-- Listado de reservas -->
+        <section class="reservations-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">AGENDA PERSONAL</p>
+                    <h2>Mis reservas</h2>
+                    <p class="section-description">
+                        Organizá tus turnos por fecha o consultalos según su estado.
                     </p>
                 </div>
+            </div>
 
-            </article>
+            <!-- Ordenamiento y filtros -->
+            <div class="filter-panel">
+                <div class="filter-field">
+                    <label for="ordenFechaPaciente">Ordenar por fecha</label>
 
+                    <select id="ordenFechaPaciente" [value]="ordenFecha()"
+                        (change)="ordenFecha.set($any($event.target).value)">
+                        <option value="recientes">Más recientes primero</option>
+                        <option value="antiguas">Más antiguas primero</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="estadoFiltroPaciente">Filtrar por estado</label>
+
+                    <select id="estadoFiltroPaciente" [value]="estadoFiltro()"
+                        (change)="estadoFiltro.set($any($event.target).value)">
+                        <option value="todos">Todos los estados</option>
+                        <option value="activo">Activos</option>
+                        <option value="atendido">Atendidos</option>
+                        <option value="ausente">Ausentes</option>
+                        <option value="cancelado">Cancelados</option>
+                    </select>
+                </div>
+
+                <button class="refresh-button clear-filters-button" type="button" (click)="limpiarFiltros()" [disabled]="
+            ordenFecha() === 'recientes' && estadoFiltro() === 'todos'
+          ">
+                    Limpiar filtros
+                </button>
+            </div>
+
+            @if (!cargando() && !error() && reservas().length > 0) {
+            <p class="results-count">
+                Mostrando <strong>{{ reservasFiltradas().length }}</strong>
+                de <strong>{{ reservas().length }}</strong> turnos
+            </p>
+            }
+
+            @if (cargando()) {
+            <div class="feedback-card">
+                <div class="loader"></div>
+                <p>Estamos buscando tus turnos...</p>
+            </div>
+            }
+
+            @if (!cargando() && error()) {
+            <div class="feedback-card error-card">
+                <div class="feedback-icon">!</div>
+                <h3>No pudimos cargar tus turnos</h3>
+                <p>{{ error() }}</p>
+
+                <button class="refresh-button" type="button" (click)="cargarMisTurnos()">
+                    Intentar nuevamente
+                </button>
+            </div>
+            }
+
+            @if (!cargando() && !error() && reservas().length === 0) {
+            <div class="feedback-card">
+                <div class="empty-icon">+</div>
+                <h3>Todavía no tenés turnos</h3>
+                <p>
+                    Cuando reserves una consulta, aparecerá acá con su fecha,
+                    horario y estado.
+                </p>
+            </div>
+            }
+
+            @if (
+            !cargando() &&
+            !error() &&
+            reservas().length > 0 &&
+            reservasFiltradas().length === 0
+            ) {
+            <div class="feedback-card">
+                <div class="empty-icon">⌕</div>
+                <h3>No hay turnos para mostrar</h3>
+                <p>
+                    No encontramos reservas que coincidan con el estado seleccionado.
+                    Probá cambiar los filtros.
+                </p>
+
+                <button class="refresh-button" type="button" (click)="limpiarFiltros()">
+                    Mostrar todos los turnos
+                </button>
+            </div>
+            }
+
+            @if (!cargando() && !error() && reservasFiltradas().length > 0) {
+            <div class="reservations-list">
+                @for (reserva of reservasFiltradas(); track reserva.id) {
+                <article class="reservation-card">
+                    <div class="reservation-date">
+                        <span class="date-icon">▦</span>
+
+                        <div>
+                            <span class="field-label">Fecha y hora</span>
+                            <strong>{{ formatearFecha(reserva.fecha_hora) }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="reservation-details">
+                        <div class="detail-item">
+                            <span class="field-label">Médico</span>
+
+                            <strong>
+                                {{ reserva.medico?.nombre || 'No disponible' }}
+                            </strong>
+
+                            <span class="detail-secondary">
+                                @if (reserva.medico?.matricula) {
+                                Matrícula: {{ reserva.medico.matricula }}
+                                } @else {
+                                Profesional asignado
+                                }
+                            </span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">Valor de la consulta</span>
+
+                            <strong class="price">
+                                {{
+                                reserva.valor_consulta
+                                | currency:'ARS':'symbol':'1.2-2':'es-AR'
+                                }}
+                            </strong>
+
+                            <span class="detail-secondary">
+                                Valor registrado al reservar
+                            </span>
+                        </div>
+
+                        <div class="detail-item">
+                            <span class="field-label">Estado</span>
+
+                            <span class="status-badge"
+                                [class.status-active]="normalizarEstado(reserva.estado) === 'activo'"
+                                [class.status-attended]="normalizarEstado(reserva.estado) === 'atendido'"
+                                [class.status-absent]="normalizarEstado(reserva.estado) === 'ausente'"
+                                [class.status-cancelled]="normalizarEstado(reserva.estado) === 'cancelado'">
+                                {{ reserva.estado }}
+                            </span>
+                        </div>
+                    </div>
+
+                    @if (normalizarEstado(reserva.estado) === 'activo') {
+                    <div class="reservation-actions">
+                        <button type="button" class="cancel-button" (click)="cancelarTurno(reserva)">
+                            Cancelar turno
+                        </button>
+                    </div>
+                    }
+                </article>
+                }
+            </div>
+            }
         </section>
     </main>
 
-    <div class="success-toast">
+    <!-- Modal reutilizable -->
+    @if (modal(); as ventana) {
+    <div class="modal-overlay" (click)="cerrarModal()" (keydown.escape)="cerrarModal()">
+        <section class="patient-modal" [class.modal-confirmation]="ventana.tipo === 'confirmacion'"
+            [class.modal-success]="ventana.tipo === 'exito'" [class.modal-error]="ventana.tipo === 'error'"
+            role="dialog" aria-modal="true" aria-labelledby="modalTitulo" (click)="$event.stopPropagation()">
+            <div class="modal-icon">
+                @if (ventana.tipo === 'confirmacion') {
+                <span>?</span>
+                } @else if (ventana.tipo === 'exito') {
+                <span>✓</span>
+                } @else {
+                <span>!</span>
+                }
+            </div>
 
-        <div class="toast-icon">
-            ✓
-        </div>
+            <h2 id="modalTitulo">{{ ventana.titulo }}</h2>
+            <p class="modal-message">{{ ventana.mensaje }}</p>
 
-        <div>
-            <strong>Sesión iniciada</strong>
+            <div class="modal-actions">
+                @if (ventana.tipo === 'confirmacion') {
+                <button type="button" class="modal-button modal-button-secondary" [disabled]="procesandoModal()"
+                    (click)="cerrarModal()">
+                    No, volver
+                </button>
 
-            <p>
-                Bienvenido/a al portal del paciente.
-            </p>
-        </div>
+                <button type="button" class="modal-button" [class.modal-button-danger]="
+                ventana.accion === 'cerrarSesion' ||
+                ventana.accion === 'cancelarTurno'
+              " [class.modal-button-primary]="
+                ventana.accion !== 'cerrarSesion' &&
+                ventana.accion !== 'cancelarTurno'
+              " [disabled]="procesandoModal()" (click)="confirmarModal()">
+                    {{
+                    procesandoModal()
+                    ? 'Procesando...'
+                    : (ventana.textoConfirmar || 'Confirmar')
+                    }}
+                </button>
+                } @else {
+                <button type="button" class="modal-button modal-button-primary" (click)="cerrarModal()">
+                    Entendido
+                </button>
+                }
+            </div>
+        </section>
     </div>
-
+    }
 </div>

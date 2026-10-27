@@ -1,78 +1,384 @@
-<div class="admin-page">
+<div class="admin-container">
+    <header class="admin-header">
+        <div class="header-text">
+            <span class="eyebrow">CLÍNICA MÉDICA</span>
+            <h1>Panel de administración</h1>
+            <p>Gestioná los turnos y el valor de la consulta de los médicos.</p>
+        </div>
 
-    <div class="admin-header">
-        <div class="header-content">
+        <button type="button" class="btn btn-header" (click)="cerrarSesion()">
+            Cerrar sesión
+        </button>
+    </header>
 
+    <nav class="admin-nav">
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'resumen'"
+            (click)="cambiarSeccion('resumen')">
+            Resumen
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'turnos'"
+            (click)="cambiarSeccion('turnos')">
+            Turnos
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'medicos'"
+            (click)="cambiarSeccion('medicos')">
+            Médicos
+        </button>
+
+        <button type="button" class="btn" [class.btn-primary]="seccionActiva() === 'pacientes'"
+            (click)="cambiarSeccion('pacientes')">
+            Pacientes
+        </button>
+    </nav>
+
+    <!-- RESUMEN -->
+    <section *ngIf="seccionActiva() === 'resumen'" class="admin-section">
+        <div class="section-heading">
             <div>
-                <p class="eyebrow">Panel de administración</p>
-
-                <h1>Bienvenido/a</h1>
-
-                <p class="subtitle">
-                    Gestioná las funcionalidades disponibles del sistema de clínica.
-                </p>
+                <span class="eyebrow">VISTA GENERAL</span>
+                <h2>Resumen</h2>
+                <p>Accedé rápidamente a las principales funciones.</p>
             </div>
+        </div>
 
-            <button class="logout-button" type="button" (click)="cerrarSesion()">
-                Cerrar sesión
+        <div class="summary-grid">
+            <button type="button" class="summary-card" (click)="cambiarSeccion('turnos')">
+                <span class="summary-icon">▤</span>
+                <span class="summary-label">Turnos reservados</span>
+                <strong>{{ reservas().length }}</strong>
+                <span class="summary-foot">Reservar y cancelar turnos →</span>
             </button>
 
+            <button type="button" class="summary-card" (click)="cambiarSeccion('medicos')">
+                <span class="summary-icon">✚</span>
+                <span class="summary-label">Médicos registrados</span>
+                <strong>{{ medicos().length }}</strong>
+                <span class="summary-foot">Consultar profesionales →</span>
+            </button>
+
+            <button type="button" class="summary-card" (click)="cambiarSeccion('pacientes')">
+                <span class="summary-icon">♡</span>
+                <span class="summary-label">Pacientes registrados</span>
+                <strong>{{ pacientes().length }}</strong>
+                <span class="summary-foot">Consultar pacientes →</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- TURNOS -->
+    <section *ngIf="seccionActiva() === 'turnos'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">GESTIÓN DE TURNOS</span>
+                <h2>Turnos</h2>
+                <p>Reservá turnos para los pacientes y cancelá los que todavía no empezaron.</p>
+            </div>
         </div>
 
+        <!-- Formulario para reservar -->
+        <div class="panel-card">
+            <form class="admin-form" (ngSubmit)="reservar()">
+                <h3 class="panel-title">Reservar turno</h3>
+
+                <div *ngIf="errorNuevaReserva()" class="alert alert-error" role="alert">
+                    {{ errorNuevaReserva() }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reservaPaciente">Paciente *</label>
+                        <select id="reservaPaciente" name="reservaPaciente" [(ngModel)]="nuevaReserva.id_paciente"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un paciente</option>
+                            <option *ngFor="let paciente of pacientes()" [value]="paciente.id">
+                                {{ paciente.apellidos }}, {{ paciente.nombres }} ({{ paciente.documento }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaMedico">Médico *</label>
+                        <select id="reservaMedico" name="reservaMedico" [(ngModel)]="nuevaReserva.id_medico"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un médico</option>
+                            <option *ngFor="let medico of medicos()" [value]="medico.id">
+                                {{ medico.nombre }} - {{ formatearImporte(medico.valor_consulta) }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaFecha">Fecha *</label>
+                        <input id="reservaFecha" name="reservaFecha" type="date" [min]="fechaMinima"
+                            [max]="fechaMaxima" [(ngModel)]="nuevaReserva.fecha" [disabled]="creandoReserva()" />
+                        <small>Hasta 30 días de anticipación.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reservaHora">Horario *</label>
+                        <select id="reservaHora" name="reservaHora" [(ngModel)]="nuevaReserva.hora"
+                            [disabled]="creandoReserva()">
+                            <option value="">Elegí un horario</option>
+                            <option *ngFor="let hora of horariosDisponibles" [value]="hora">
+                                {{ hora }}
+                            </option>
+                        </select>
+                        <small>Turnos de una hora, de 8 a 16 hs.</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" [disabled]="creandoReserva()">
+                        {{ creandoReserva() ? 'Reservando...' : 'Reservar turno' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Listado de turnos -->
+        <div class="panel-card">
+            <div class="table-toolbar">
+                <h3 class="panel-title">Turnos reservados</h3>
+
+                <button type="button" class="btn btn-secondary" [disabled]="cargandoReservas()"
+                    (click)="cargarReservas()">
+                    {{ cargandoReservas() ? 'Cargando...' : '↻ Actualizar' }}
+                </button>
+            </div>
+
+            <div *ngIf="errorReservas()" class="alert alert-error" role="alert">
+                {{ errorReservas() }}
+            </div>
+
+            <div *ngIf="cargandoReservas()" class="loading-state">
+                Cargando turnos...
+            </div>
+
+            <div *ngIf="!cargandoReservas() && reservas().length === 0" class="empty-state">
+                No hay turnos reservados.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoReservas() && reservas().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y hora</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Valor</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let reserva of reservasOrdenadas()">
+                            <td><strong>{{ formatearFecha(reserva.fecha_hora) }}</strong></td>
+                            <td>{{ reserva.paciente?.nombre ?? '-' }}</td>
+                            <td>{{ reserva.medico?.nombre ?? '-' }}</td>
+                            <td>{{ formatearImporte(reserva.valor_consulta) }}</td>
+                            <td>
+                                <span class="status-badge" [class.status-active]="esActiva(reserva)"
+                                    [class.status-inactive]="!esActiva(reserva)">
+                                    {{ reserva.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                <button *ngIf="esActiva(reserva)" type="button" class="btn btn-danger btn-small"
+                                    [disabled]="procesandoAccionModal()" (click)="cancelarReserva(reserva)">
+                                    Cancelar
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- MÉDICOS -->
+    <section *ngIf="seccionActiva() === 'medicos'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">EQUIPO PROFESIONAL</span>
+                <h2>Médicos</h2>
+                <p>Listado de profesionales. Desde acá podés modificar el valor de la consulta.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoMedicos()" (click)="cargarMedicos()">
+                {{ cargandoMedicos() ? 'Cargando...' : '↻ Actualizar' }}
+            </button>
+        </div>
+
+        <div *ngIf="errorMedicos()" class="alert alert-error" role="alert">
+            {{ errorMedicos() }}
+        </div>
+
+        <div class="panel-card">
+            <div *ngIf="cargandoMedicos()" class="loading-state">
+                Cargando médicos...
+            </div>
+
+            <div *ngIf="!cargandoMedicos() && medicos().length === 0" class="empty-state">
+                No hay médicos para mostrar.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoMedicos() && medicos().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID médico</th>
+                            <th>Documento</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Matrícula</th>
+                            <th>Valor consulta</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let medico of medicos()">
+                            <td>{{ medico.id }}</td>
+                            <td>{{ medico.documento }}</td>
+                            <td>{{ medico.nombre }}</td>
+                            <td>{{ medico.email }}</td>
+                            <td>{{ medico.matricula }}</td>
+                            <td>
+                                <div class="valor-editor">
+                                    <input type="number" min="1" step="1" [name]="'valor-' + medico.id"
+                                        [attr.aria-label]="'Valor de consulta de ' + medico.nombre"
+                                        [(ngModel)]="valoresEditados[medico.id]"
+                                        [disabled]="guardandoValorId() === medico.id" />
+
+                                    <button type="button" class="btn btn-primary btn-small"
+                                        [disabled]="guardandoValorId() !== null" (click)="guardarValor(medico)">
+                                        {{ guardandoValorId() === medico.id ? 'Guardando...' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge"
+                                    [class.status-active]="medico.estado?.toLowerCase() === 'activo'"
+                                    [class.status-inactive]="medico.estado?.toLowerCase() !== 'activo'">
+                                    {{ medico.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PACIENTES -->
+    <section *ngIf="seccionActiva() === 'pacientes'" class="admin-section">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">CUENTAS DE PACIENTES</span>
+                <h2>Pacientes</h2>
+                <p>Listado de pacientes registrados.</p>
+            </div>
+
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoPacientes()"
+                (click)="cargarPacientes()">
+                {{ cargandoPacientes() ? 'Cargando...' : '↻ Actualizar' }}
+            </button>
+        </div>
+
+        <div *ngIf="errorPacientes()" class="alert alert-error" role="alert">
+            {{ errorPacientes() }}
+        </div>
+
+        <div class="panel-card">
+            <div *ngIf="cargandoPacientes()" class="loading-state">
+                Cargando pacientes...
+            </div>
+
+            <div *ngIf="!cargandoPacientes() && pacientes().length === 0" class="empty-state">
+                No hay pacientes para mostrar.
+            </div>
+
+            <div class="table-responsive" *ngIf="!cargandoPacientes() && pacientes().length > 0">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID usuario</th>
+                            <th>Documento</th>
+                            <th>Apellido y nombre</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let paciente of pacientes()">
+                            <td>{{ paciente.id }}</td>
+                            <td>{{ paciente.documento }}</td>
+                            <td>
+                                <strong>{{ paciente.apellidos }}, {{ paciente.nombres }}</strong>
+                            </td>
+                            <td>{{ paciente.email }}</td>
+                            <td>
+                                <span class="status-badge"
+                                    [class.status-active]="paciente.estado?.toLowerCase() === 'activo'"
+                                    [class.status-inactive]="paciente.estado?.toLowerCase() !== 'activo'">
+                                    {{ paciente.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div *ngIf="mensajeExito()" class="success-toast" role="status" aria-live="polite">
+        <span>{{ mensajeExito() }}</span>
+        <button type="button" class="toast-close" aria-label="Cerrar mensaje" (click)="mensajeExito.set('')">
+            ✕
+        </button>
     </div>
-
-    <div class="admin-content">
-
-        <div class="options-grid">
-
-           <div
-    class="option-card"
-    role="button"
-    tabindex="0"
-    (click)="irATurnos()"
-    (keydown.enter)="irATurnos()"
-    (keydown.space)="$event.preventDefault(); irATurnos()"
->
-    <h3>Turnos</h3>
-
-    <p>
-        Reservar, consultar y cancelar turnos.
-    </p>
 </div>
 
-            <div class="option-card">
-                <h3>Médicos</h3>
+<!-- MODAL PERSONALIZADO PARA CONFIRMACIONES -->
+<div class="modal-backdrop modal-confirmacion-backdrop" *ngIf="modalAdmin() as modal" (click)="cerrarModalAdmin()">
+    <section class="modal-confirmacion" role="dialog" aria-modal="true" aria-labelledby="tituloModalAdmin"
+        aria-describedby="mensajeModalAdmin" (click)="$event.stopPropagation()">
 
-                <p>
-                    Consultar los médicos y gestionar el valor de sus consultas.
-                </p>
-            </div>
-
-            <div class="option-card">
-                <h3>Pacientes</h3>
-
-                <p>
-                    Consultar la información disponible de los pacientes.
-                </p>
-            </div>
-
+        <div class="modal-icono" [class.modal-icono-peligro]="modalEsPeligroso(modal)">
+            <span *ngIf="modal.accion.tipo === 'cerrarSesion'">↪</span>
+            <span *ngIf="modal.accion.tipo === 'cancelarReserva'">▤</span>
         </div>
 
-    </div>
+        <button type="button" class="modal-close modal-confirmacion-close" aria-label="Cerrar ventana"
+            [disabled]="procesandoAccionModal()" (click)="cerrarModalAdmin()">
+            ✕
+        </button>
 
-    <div class="success-toast">
-
-        <div class="toast-icon">
-            ✓
+        <div class="modal-confirmacion-contenido">
+            <span class="eyebrow">CLÍNICA MÉDICA</span>
+            <h2 id="tituloModalAdmin">{{ modal.titulo }}</h2>
+            <p id="mensajeModalAdmin">{{ modal.mensaje }}</p>
         </div>
 
-        <div>
-            <strong>Sesión iniciada</strong>
+        <footer class="modal-confirmacion-acciones">
+            <button type="button" class="btn btn-secondary" [disabled]="procesandoAccionModal()"
+                (click)="cerrarModalAdmin()">
+                Volver
+            </button>
 
-            <p>
-                Bienvenido/a al panel de administración.
-            </p>
-        </div>
-    </div>
-
+            <button type="button" class="btn" [class.btn-danger]="modalEsPeligroso(modal)"
+                [class.btn-primary]="!modalEsPeligroso(modal)" [disabled]="procesandoAccionModal()"
+                (click)="confirmarAccionModal()">
+                {{
+                procesandoAccionModal()
+                ? 'Procesando...'
+                : modal.textoConfirmar
+                }}
+            </button>
+        </footer>
+    </section>
 </div>

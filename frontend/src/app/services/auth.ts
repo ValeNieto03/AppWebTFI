@@ -1,5 +1,7 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 export interface UsuarioSesion {
@@ -20,36 +22,36 @@ export interface LoginRespuesta {
     providedIn: 'root',
 })
 export class AuthService {
+    private readonly apiUrl =
+        '/api/v1/auth';
 
-    // Usamos una ruta relativa: Angular la deriva al backend mediante el proxy.
-    private readonly apiUrl = '/api/v1/auth';
+    private temporizadorExpiracion:
+        ReturnType<typeof setTimeout> | undefined;
 
     constructor(
         private readonly http: HttpClient,
-    ) { }
+        private readonly router: Router,
+    ) {
+        // Si ya existe una sesión, comprobar su vencimiento.
+        this.programarExpiracionSesion();
+    }
 
     login(
         email: string,
         clave: string,
     ): Observable<LoginRespuesta> {
-
         return this.http
             .post<LoginRespuesta>(
                 `${this.apiUrl}/login`,
-                {
-                    email,
-                    clave,
-                },
+                { email, clave },
             )
             .pipe(
                 tap((respuesta) => {
-
                     if (
                         respuesta.mensaje === 'Login correcto' &&
                         respuesta.token &&
                         respuesta.usuario
                     ) {
-
                         localStorage.setItem(
                             'token',
                             respuesta.token,
@@ -60,62 +62,126 @@ export class AuthService {
                             JSON.stringify(respuesta.usuario),
                         );
 
+                        this.programarExpiracionSesion();
                     }
-
                 }),
             );
-
     }
 
-    logout() {
+    private programarExpiracionSesion(): void {
+        if (this.temporizadorExpiracion !== undefined) {
+            clearTimeout(this.temporizadorExpiracion);
+            this.temporizadorExpiracion = undefined;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            return;
+        }
+
+        try {
+            const partes = token.split('.');
+            if (partes.length !== 3) {
+                this.cerrarSesionPorExpiracion();
+                return;
+            }
+
+            // Leer la fecha de vencimiento del JWT.
+            const payloadBase64 = partes[1]
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+
+            const payload = JSON.parse(
+                atob(payloadBase64),
+            );
+
+            const expiracion = Number(payload.exp);
+
+            if (!Number.isFinite(expiracion)) {
+                // Sin fecha de vencimiento válida no podemos
+                // programar un cierre automático confiable.
+                return;
+            }
+
+            const milisegundosRestantes =
+                expiracion * 1000 - Date.now();
+
+            if (milisegundosRestantes <= 0) {
+                this.cerrarSesionPorExpiracion();
+                return;
+            }
+
+            this.temporizadorExpiracion = setTimeout(
+                () => this.cerrarSesionPorExpiracion(),
+                milisegundosRestantes,
+            );
+        } catch (error) {
+            console.error(
+                'No se pudo comprobar la expiración de la sesión:',
+                error,
+            );
+        }
+    }
+
+    private cerrarSesionPorExpiracion(): void {
+        this.logout();
+
+        // Evitar redirecciones repetidas si ya estamos
+        // en la pantalla de inicio de sesión.
+        if (this.router.url !== '/login') {
+            void this.router.navigate(['/login'], {
+                queryParams: { sesionExpirada: 'true' },
+            });
+        }
+    }
+
+    obtenerUsuario(): UsuarioSesion | null {
+        const usuarioGuardado = localStorage.getItem('usuario');
+
+        if (!usuarioGuardado) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(usuarioGuardado) as UsuarioSesion;
+        } catch {
+            return null;
+        }
+    }
+
+    sesionValida(): boolean {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            return false;
+        }
+
+        try {
+            const partes = token.split('.');
+
+            if (partes.length !== 3) {
+                return false;
+            }
+
+            const payloadBase64 = partes[1]
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            const payload = JSON.parse(atob(payloadBase64));
+
+            return typeof payload.exp === 'number' &&
+                payload.exp > Math.floor(Date.now() / 1000);
+        } catch {
+            return false;
+        }
+    }
+    logout(): void {
+        if (this.temporizadorExpiracion !== undefined) {
+            clearTimeout(this.temporizadorExpiracion);
+            this.temporizadorExpiracion = undefined;
+        }
+
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
     }
-
-obtenerUsuario(): UsuarioSesion | null {
-    const usuarioGuardado = localStorage.getItem('usuario');
-
-    if (!usuarioGuardado) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(usuarioGuardado) as UsuarioSesion;
-    } catch {
-        return null;
-    }
-}
-
-sesionValida(): boolean {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        return false;
-    }
-
-    try {
-        const partes = token.split('.');
-
-        if (partes.length !== 3) {
-            return false;
-        }
-
-        const base64 = partes[1]
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-
-        const payload = JSON.parse(atob(base64));
-
-        if (typeof payload.exp !== 'number') {
-            return false;
-        }
-
-        const fechaActual = Math.floor(Date.now() / 1000);
-
-        return payload.exp > fechaActual;
-    } catch {
-        return false;
-    }
-}
-
 }

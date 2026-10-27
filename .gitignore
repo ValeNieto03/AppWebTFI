@@ -75,3 +75,12 @@ lerna-debug.log*
 
 .DS_Store
 Thumbs.db
+# Compodoc
+backend/documentation/
+frontend/documentation/
+# ==========================================
+# Archivos locales del editor
+# ==========================================
+
+CLAUDE.md
+.claude/

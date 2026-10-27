@@ -44,11 +44,11 @@ export class ReservaRespuestaDto {
   })
   paciente?: PersonaReservaDto | null;
 
-  @ApiProperty({
-    type: String,
+  @ApiPropertyOptional({
+    type: MedicoReservaDto,
     nullable: true,
   })
-  medico: string | null;
+  medico?: MedicoReservaDto | null;
 }
 
 export class ListadoReservasRespuestaDto {

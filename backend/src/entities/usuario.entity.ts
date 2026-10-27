@@ -1,14 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum EstadoUsuario {
-  ACTIVO = 'activo',
-  BAJA = 'baja',
+  ACTIVO = 'ACTIVO',
+  BAJA = 'BAJA',
 }
 
 export enum RolUsuario {
-  MEDICO = 'Medico',
-  PACIENTE = 'Paciente',
-  ADMINISTRADOR = 'Administrador',
+  MEDICO = 'MEDICO',
+  PACIENTE = 'PACIENTE',
+  ADMINISTRADOR = 'ADMINISTRADOR',
 }
 
 @Entity('usuarios')
@@ -25,7 +25,7 @@ export class Usuario {
   @Column({ type: 'text' })
   nombres: string;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'text' })
   email: string;
 
   @Column({ type: 'text' })
@@ -34,12 +34,14 @@ export class Usuario {
   @Column({
     type: 'enum',
     enum: EstadoUsuario,
+    enumName: 'estados_usuarios',
   })
   estado: EstadoUsuario;
 
   @Column({
     type: 'enum',
     enum: RolUsuario,
+    enumName: 'roles_usuarios',
   })
   rol: RolUsuario;
 }

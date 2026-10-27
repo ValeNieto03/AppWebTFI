@@ -55,15 +55,15 @@
 
                 </div>
 
-                <button type="submit" [disabled]="cargando">
-                    {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+                <button type="submit" [disabled]="cargando()">
+                    {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
                 </button>
 
             </form>
 
-            @if (mensaje) {
+            @if (mensaje()) {
             <p class="login-message">
-                {{ mensaje }}
+                {{ mensaje() }}
             </p>
             }
 

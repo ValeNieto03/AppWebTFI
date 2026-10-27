@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -27,4 +28,4 @@ import { PassportModule } from '@nestjs/passport';
   controllers: [AuthController],
   exports: [PassportModule],
 })
-export class AuthModule {}
+export class AuthModule { }

@@ -1,97 +1,260 @@
 <div class="doctor-page">
-
     <header class="doctor-header">
-
         <div class="header-content">
-
             <div>
                 <p class="eyebrow">Portal del médico</p>
-
                 <h1>Mis turnos</h1>
-
                 <p class="subtitle">
-                    Consultá y gestioná tus turnos médicos.
+                    Consultá tus reservas y registrá el resultado de cada consulta.
                 </p>
             </div>
 
             <button class="logout-button" type="button" (click)="cerrarSesion()">
                 Cerrar sesión
             </button>
-
         </div>
-
     </header>
 
     <main class="doctor-content">
-
-        <section class="options-grid">
-
-            <article class="option-card">
-
-                <div class="option-icon">
-                    ✓
-                </div>
-
+        <section class="summary-grid" aria-label="Resumen de turnos">
+            <article class="summary-item">
+                <span class="summary-icon">▣</span>
                 <div>
-                    <h3>Turnos reservados</h3>
-
-                    <p>
-                        Consultá tus turnos reservados para una fecha determinada.
-                    </p>
+                    <p class="summary-label">Todas las reservas</p>
+                    <p class="summary-number">{{ reservas().length }}</p>
                 </div>
-
             </article>
 
-            <article class="option-card">
-
-                <div class="option-icon">
-                    ◷
-                </div>
-
+            <article class="summary-item">
+                <span class="summary-icon">◷</span>
                 <div>
-                    <h3>Consultar por fecha</h3>
-
-                    <p>
-                        Elegí una fecha para consultar los turnos correspondientes.
-                    </p>
+                    <p class="summary-label">Por atender</p>
+                    <p class="summary-number">{{ contarPorEstado('ACTIVO') }}</p>
                 </div>
-
             </article>
 
-            <article class="option-card">
-
-                <div class="option-icon">
-                    ✓
-                </div>
-
+            <article class="summary-item">
+                <span class="summary-icon">✓</span>
                 <div>
-                    <h3>Estado del turno</h3>
-
-                    <p>
-                        Marcá un turno como atendido o ausente.
-                    </p>
+                    <p class="summary-label">Atendidas</p>
+                    <p class="summary-number">{{ contarPorEstado('ATENDIDO') }}</p>
                 </div>
-
             </article>
-
         </section>
 
+        <section class="appointments-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Agenda de turnos</h2>
+                    <p>
+                        Elegí una categoría para consultar las reservas de ese estado.
+                    </p>
+                </div>
+            </div>
+
+            <div class="date-filter">
+                <label for="fechaTurnos">
+                    <span>Filtrar por fecha</span>
+                    <input id="fechaTurnos" type="date" [(ngModel)]="fechaSeleccionada" />
+                </label>
+
+                <button type="button" class="search-button" (click)="cargarTurnos()" [disabled]="cargando()">
+                    {{ cargando() ? 'Consultando...' : 'Buscar por fecha' }}
+                </button>
+
+                <button type="button" class="secondary-button" (click)="limpiarFiltro()" [disabled]="cargando()">
+                    Ver todas las fechas
+                </button>
+
+                <label for="ordenFecha">
+                    <span>Ordenar por fecha</span>
+                    <select id="ordenFecha" [ngModel]="ordenFecha()" (ngModelChange)="ordenFecha.set($event)">
+                        <option value="desc">Más recientes primero</option>
+                        <option value="asc">Más antiguas primero</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="feedback success-message" *ngIf="mensaje()" role="status">
+                {{ mensaje() }}
+            </div>
+
+            <div class="feedback error-message" *ngIf="error()" role="alert">
+                {{ error() }}
+            </div>
+
+            <div class="loading-message" *ngIf="cargando()">
+                Cargando reservas...
+            </div>
+
+            <nav class="status-tabs" aria-label="Filtrar reservas por estado">
+                <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'activo'"
+                    [attr.aria-pressed]="pestanaActiva() === 'activo'" (click)="pestanaActiva.set('activo')">
+                    Por atender
+                    <span class="tab-count">{{ contarPorEstado('ACTIVO') }}</span>
+                </button>
+
+                <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'atendido'"
+                    [attr.aria-pressed]="pestanaActiva() === 'atendido'" (click)="pestanaActiva.set('atendido')">
+                    Atendidas
+                    <span class="tab-count">{{ contarPorEstado('ATENDIDO') }}</span>
+                </button>
+
+                <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'ausente'"
+                    [attr.aria-pressed]="pestanaActiva() === 'ausente'" (click)="pestanaActiva.set('ausente')">
+                    Ausentes
+                    <span class="tab-count">{{ contarPorEstado('AUSENTE') }}</span>
+                </button>
+
+                <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'cancelado'"
+                    [attr.aria-pressed]="pestanaActiva() === 'cancelado'" (click)="pestanaActiva.set('cancelado')">
+                    Canceladas
+                    <span class="tab-count">{{ contarPorEstado('CANCELADO') }}</span>
+                </button>
+
+                <button type="button" class="status-tab" [class.active]="pestanaActiva() === 'todas'"
+                    [attr.aria-pressed]="pestanaActiva() === 'todas'" (click)="pestanaActiva.set('todas')">
+                    Todas
+                    <span class="tab-count">{{ reservas().length }}</span>
+                </button>
+            </nav>
+
+            <div class="empty-message" *ngIf="!cargando() && !error() && reservasFiltradas().length === 0">
+                <ng-container [ngSwitch]="pestanaActiva()">
+                    <span *ngSwitchCase="'activo'">
+                        No hay reservas pendientes de atención para los filtros seleccionados.
+                    </span>
+                    <span *ngSwitchCase="'atendido'">
+                        No hay consultas atendidas para los filtros seleccionados.
+                    </span>
+                    <span *ngSwitchCase="'ausente'">
+                        No hay reservas marcadas como ausentes para los filtros seleccionados.
+                    </span>
+                    <span *ngSwitchCase="'cancelado'">
+                        No hay reservas canceladas para los filtros seleccionados.
+                    </span>
+                    <span *ngSwitchDefault>
+                        {{
+                        fechaSeleccionada
+                        ? 'No hay reservas para la fecha seleccionada.'
+                        : 'Este médico todavía no tiene reservas.'
+                        }}
+                    </span>
+                </ng-container>
+            </div>
+
+            <div class="appointments-list" *ngIf="!cargando()">
+                <article class="appointment-card" *ngFor="let reserva of reservasFiltradas()">
+                    <div class="appointment-info">
+                        <div class="appointment-time">
+                            {{ formatearFecha(reserva.fecha_hora) }}
+                        </div>
+
+                        <h3>
+                            {{ reserva.paciente?.nombre ?? 'Paciente sin datos' }}
+                        </h3>
+
+                        <p *ngIf="reserva.paciente?.documento">
+                            Documento: {{ reserva.paciente?.documento }}
+                        </p>
+
+                        <p *ngIf="reserva.paciente?.email">
+                            {{ reserva.paciente?.email }}
+                        </p>
+
+                        <p>
+                            Consulta:
+                            {{
+                            reserva.valor_consulta
+                            | currency:'ARS':'symbol':'1.0-0':'es-AR'
+                            }}
+                        </p>
+                    </div>
+
+                    <div class="appointment-actions">
+                        <span class="status" [ngClass]="{
+                                'status-active': reserva.estado.trim().toUpperCase() === 'ACTIVO',
+                                'status-attended': reserva.estado.trim().toUpperCase() === 'ATENDIDO',
+                                'status-absent': reserva.estado.trim().toUpperCase() === 'AUSENTE',
+                                'status-canceled': reserva.estado.trim().toUpperCase() === 'CANCELADO'
+                            }">
+                            {{ reserva.estado }}
+                        </span>
+
+                        <div class="action-buttons" *ngIf="reserva.estado.trim().toUpperCase() === 'ACTIVO'">
+                            <button type="button" class="attended-button"
+                                [disabled]="actualizandoId() === reserva.id || procesandoConfirmacion()"
+                                (click)="cambiarEstado(reserva, 'ATENDIDO')">
+                                Marcar atendido
+                            </button>
+
+                            <button type="button" class="absent-button"
+                                [disabled]="actualizandoId() === reserva.id || procesandoConfirmacion()"
+                                (click)="cambiarEstado(reserva, 'AUSENTE')">
+                                Marcar ausente
+                            </button>
+                        </div>
+
+                        <p class="updating-message" *ngIf="actualizandoId() === reserva.id">
+                            Actualizando estado...
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </section>
     </main>
+</div>
 
-    <div class="success-toast">
+<!-- MODAL PERSONALIZADO PARA CONFIRMAR EL ESTADO DEL TURNO -->
+<div class="confirmation-backdrop" *ngIf="modalConfirmacion() as modal" (click)="cerrarModalConfirmacion()">
+    <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title"
+        aria-describedby="confirmation-message" (click)="$event.stopPropagation()">
 
-        <div class="toast-icon">
-            ✓
+        <button type="button" class="confirmation-close" aria-label="Cerrar ventana"
+            [disabled]="procesandoConfirmacion()" (click)="cerrarModalConfirmacion()">
+            ✕
+        </button>
+
+        <div class="confirmation-icon" [class.confirmation-icon-danger]="modal.estado === 'AUSENTE'">
+            <span *ngIf="modal.estado === 'ATENDIDO'">✓</span>
+            <span *ngIf="modal.estado === 'AUSENTE'">!</span>
         </div>
 
-        <div>
-            <strong>Sesión iniciada</strong>
+        <div class="confirmation-content">
+            <span class="eyebrow">PORTAL DEL MÉDICO</span>
 
-            <p>
-                Bienvenido/a al portal del médico.
-            </p>
+            <h2 id="confirmation-title">{{ modal.titulo }}</h2>
+
+            <p id="confirmation-message">{{ modal.mensaje }}</p>
+
+            <div class="confirmation-appointment">
+                <span>Fecha del turno</span>
+                <strong>{{ formatearFecha(modal.reserva.fecha_hora) }}</strong>
+            </div>
+
+            <div class="confirmation-appointment">
+                <span>Paciente</span>
+                <strong>
+                    {{ modal.reserva.paciente?.nombre ?? 'Paciente sin datos' }}
+                </strong>
+            </div>
         </div>
 
-    </div>
+        <footer class="confirmation-actions">
+            <button type="button" class="confirmation-cancel" [disabled]="procesandoConfirmacion()"
+                (click)="cerrarModalConfirmacion()">
+                Cancelar
+            </button>
 
+            <button type="button" class="confirmation-submit"
+                [class.confirmation-submit-danger]="modal.estado === 'AUSENTE'" [disabled]="procesandoConfirmacion()"
+                (click)="confirmarCambioEstado()">
+                {{
+                procesandoConfirmacion()
+                ? 'Procesando...'
+                : modal.textoConfirmar
+                }}
+            </button>
+        </footer>
+    </section>
 </div>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
@@ -13,8 +13,8 @@ export class Login {
   email = '';
   clave = '';
 
-  mensaje = '';
-  cargando = false;
+  mensaje = signal('');
+  cargando = signal(false);
 
   constructor(
     private readonly authService: AuthService,
@@ -22,52 +22,54 @@ export class Login {
   ) { }
 
   iniciarSesion() {
-    if (this.cargando) {
+    if (this.cargando()) {
       return;
     }
 
-    this.mensaje = '';
+    this.mensaje.set('');
 
     if (!this.email || !this.clave) {
-      this.mensaje =
-        'Completá el correo electrónico y la contraseña.';
+      this.mensaje.set(
+        'Completá el correo electrónico y la contraseña.',
+      );
       return;
     }
 
-    this.cargando = true;
+    this.cargando.set(true);
 
     this.authService.login(this.email, this.clave).subscribe({
       next: (respuesta) => {
         console.log('Login exitoso:', respuesta);
 
-        this.cargando = false;
+        this.cargando.set(false);
 
         if (
           respuesta.mensaje === 'Login correcto' &&
           respuesta.usuario
         ) {
-          if (respuesta.usuario.rol === 'Administrador') {
+          if (respuesta.usuario.rol === 'ADMINISTRADOR') {
             this.router.navigate(['/admin']);
             return;
           }
 
-          if (respuesta.usuario.rol === 'Paciente') {
+          if (respuesta.usuario.rol === 'PACIENTE') {
             this.router.navigate(['/paciente']);
             return;
           }
 
-          if (respuesta.usuario.rol === 'Medico') {
+          if (respuesta.usuario.rol === 'MEDICO') {
             this.router.navigate(['/medico']);
             return;
           }
 
-          this.mensaje =
-            `Bienvenido/a ${respuesta.usuario.nombre} ${respuesta.usuario.apellido}`;
+          this.mensaje.set(
+            `Bienvenido/a ${respuesta.usuario.nombre} ${respuesta.usuario.apellido}`,
+          );
 
           this.email = '';
           this.clave = '';
         } else {
-          this.mensaje = respuesta.mensaje;
+          this.mensaje.set(respuesta.mensaje);
         }
       },
 
@@ -77,16 +79,18 @@ export class Login {
           error,
         );
 
-        this.cargando = false;
+        this.cargando.set(false);
 
         if (error.status === 0) {
-          this.mensaje =
-            'No se pudo conectar con el servidor.';
+          this.mensaje.set(
+            'No se pudo conectar con el servidor.',
+          );
         } else if (error.error?.message) {
-          this.mensaje = error.error.message;
+          this.mensaje.set(error.error.message);
         } else {
-          this.mensaje =
-            'Ocurrió un error al iniciar sesión.';
+          this.mensaje.set(
+            'Ocurrió un error al iniciar sesión.',
+          );
         }
       },
     });

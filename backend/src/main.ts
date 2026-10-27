@@ -41,7 +41,6 @@ async function bootstrap() {
       tagsSorter: (a: string, b: string) => {
         const orden = [
           'Auth',
-          'Usuarios',
           'Medicos',
           'Pacientes',
           'Reservas',

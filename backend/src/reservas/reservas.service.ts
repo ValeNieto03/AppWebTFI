@@ -1,10 +1,24 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Reserva, EstadoReserva } from '../entities/reserva.entity.js';
+
+import {
+  Reserva,
+  EstadoReserva,
+} from '../entities/reserva.entity.js';
+
 import { Medico } from '../entities/medico.entity.js';
+import {
+  Usuario,
+  RolUsuario,
+} from '../entities/usuario.entity.js';
+
 import { CrearReservaDto } from './dto/crear-reserva.dto.js';
-import { Usuario } from '../entities/usuario.entity.js';
 
 @Injectable()
 export class ReservasService {
@@ -39,16 +53,16 @@ export class ReservasService {
             id: medico.id_usuario,
           });
 
-          datosMedico = {
-            id: medico.id,
-            nombre: usuarioMedico
-              ? `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`
-              : null,
-            documento: usuarioMedico?.documento ?? null,
-            email: usuarioMedico?.email ?? null,
-            matricula: medico.matricula,
-            valor_consulta: medico.valor_consulta,
-          };
+          if (usuarioMedico) {
+            datosMedico = {
+              id: medico.id,
+              nombre: `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`,
+              documento: usuarioMedico.documento,
+              email: usuarioMedico.email,
+              matricula: medico.matricula,
+              valor_consulta: medico.valor_consulta,
+            };
+          }
         }
 
         return {
@@ -103,16 +117,16 @@ export class ReservasService {
             id: medico.id_usuario,
           });
 
-          datosMedico = {
-            id: medico.id,
-            nombre: usuarioMedico
-              ? `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`
-              : null,
-            documento: usuarioMedico?.documento ?? null,
-            email: usuarioMedico?.email ?? null,
-            matricula: medico.matricula,
-            valor_consulta: medico.valor_consulta,
-          };
+          if (usuarioMedico) {
+            datosMedico = {
+              id: medico.id,
+              nombre: `${usuarioMedico.nombres} ${usuarioMedico.apellidos}`,
+              documento: usuarioMedico.documento,
+              email: usuarioMedico.email,
+              matricula: medico.matricula,
+              valor_consulta: medico.valor_consulta,
+            };
+          }
         }
 
         return {
@@ -140,7 +154,10 @@ export class ReservasService {
     };
   }
 
-  async obtenerPorMedico(idUsuarioMedico: number, fecha: string) {
+  async obtenerPorMedico(
+    idUsuarioMedico: number,
+    fecha?: string,
+  ) {
     const medico = await this.medicoRepository.findOneBy({
       id_usuario: idUsuarioMedico,
     });
@@ -152,19 +169,28 @@ export class ReservasService {
       };
     }
 
-    const reservas = await this.reservaRepository
+    const consulta = this.reservaRepository
       .createQueryBuilder('reserva')
       .where('reserva.id_medico = :idMedico', {
         idMedico: medico.id,
-      })
-      .andWhere('DATE(reserva.fecha_hora) = :fecha', {
-        fecha,
-      })
-      .getMany();
+      });
+
+    if (fecha) {
+      consulta.andWhere(
+        'DATE(reserva.fecha_hora) = :fecha',
+        { fecha },
+      );
+    }
+
+    consulta.orderBy('reserva.fecha_hora', 'ASC');
+
+    const reservas = await consulta.getMany();
 
     if (reservas.length === 0) {
       return {
-        mensaje: 'El médico no tiene reservas para esa fecha',
+        mensaje: fecha
+          ? 'El médico no tiene reservas para esa fecha'
+          : 'El médico no tiene reservas',
         reservas: [],
       };
     }
@@ -208,9 +234,7 @@ export class ReservasService {
     });
 
     if (!medico) {
-      return {
-        mensaje: 'El médico no existe',
-      };
+      throw new BadRequestException('El médico no existe');
     }
 
     const reserva = await this.reservaRepository.findOneBy({
@@ -247,12 +271,15 @@ export class ReservasService {
     return this.reservaRepository.save(reserva);
   }
 
-  async crear(crearReservaDto: CrearReservaDto, usuarioLogueado: any) {
+  async crear(
+    crearReservaDto: CrearReservaDto,
+    usuarioLogueado: any,
+  ) {
     let idPaciente: number;
 
-    if (usuarioLogueado.rol === 'Paciente') {
+    if (usuarioLogueado.rol === RolUsuario.PACIENTE) {
       idPaciente = usuarioLogueado.id;
-    } else if (usuarioLogueado.rol === 'Administrador') {
+    } else if (usuarioLogueado.rol === RolUsuario.ADMINISTRADOR) {
       if (!crearReservaDto.id_paciente) {
         throw new BadRequestException(
           'El administrador debe indicar el paciente',
@@ -270,8 +297,10 @@ export class ReservasService {
       id: idPaciente,
     });
 
-    if (!paciente || paciente.rol !== 'Paciente') {
-      throw new BadRequestException('El usuario no es un paciente');
+    if (!paciente || paciente.rol !== RolUsuario.PACIENTE) {
+      throw new BadRequestException(
+        'El usuario no es un paciente',
+      );
     }
 
     const partes = crearReservaDto.fecha_hora.split(' ');
@@ -325,7 +354,9 @@ export class ReservasService {
       fechaHora.getHours() !== horas ||
       fechaHora.getMinutes() !== minutos
     ) {
-      throw new BadRequestException('La fecha indicada no es válida');
+      throw new BadRequestException(
+        'La fecha indicada no es válida',
+      );
     }
 
     const ahora = new Date();
@@ -337,9 +368,13 @@ export class ReservasService {
     }
 
     const fechaMaxima = new Date(ahora);
+    fechaMaxima.setHours(0, 0, 0, 0);
     fechaMaxima.setDate(fechaMaxima.getDate() + 30);
 
-    if (fechaHora > fechaMaxima) {
+    const diaReserva = new Date(fechaHora);
+    diaReserva.setHours(0, 0, 0, 0);
+
+    if (diaReserva > fechaMaxima) {
       throw new BadRequestException(
         'No se puede reservar con más de 30 días de anticipación',
       );
@@ -397,7 +432,10 @@ export class ReservasService {
     };
   }
 
-  async cancelar(idReserva: number, idPaciente: number) {
+  async cancelar(
+    idReserva: number,
+    idPaciente: number,
+  ) {
     const reserva = await this.reservaRepository.findOneBy({
       id: idReserva,
     });
@@ -432,7 +470,8 @@ export class ReservasService {
 
     reserva.estado = EstadoReserva.CANCELADO;
 
-    const reservaCancelada = await this.reservaRepository.save(reserva);
+    const reservaCancelada =
+      await this.reservaRepository.save(reserva);
 
     return {
       mensaje: 'Reserva cancelada correctamente',
@@ -444,7 +483,6 @@ export class ReservasService {
       },
     };
   }
-
 
   async cancelarAdmin(idReserva: number) {
     const reserva = await this.reservaRepository.findOneBy({
@@ -472,7 +510,8 @@ export class ReservasService {
 
     reserva.estado = EstadoReserva.CANCELADO;
 
-    const reservaCancelada = await this.reservaRepository.save(reserva);
+    const reservaCancelada =
+      await this.reservaRepository.save(reserva);
 
     return {
       mensaje: 'Reserva cancelada correctamente',
