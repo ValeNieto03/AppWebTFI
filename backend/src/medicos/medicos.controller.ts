@@ -30,6 +30,9 @@ export class MedicosController {
     ) { }
 
     @Get()
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(RolUsuario.PACIENTE, RolUsuario.ADMINISTRADOR)
     @ApiOkResponse({
         type: [MedicoRespuestaDto],
     })
